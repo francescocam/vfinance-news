@@ -50,7 +50,7 @@ Headlines:
         result = subprocess.run(
             [
                 'openclaw', 'agent',
-                '--session-id', 'finance-news-translate-portfolio',
+                '--session-id', 'vfinance-news-translate-portfolio',
                 '--message', prompt,
                 '--json',
                 '--timeout', '60'

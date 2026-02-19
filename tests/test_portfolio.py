@@ -4,15 +4,15 @@ from pathlib import Path
 
 # Add scripts to path for imports
 import pytest
-from finance_news.portfolio import load_portfolio, save_portfolio
+from vfinance_news.portfolio import load_portfolio, save_portfolio
 
 
 def test_load_portfolio_success(tmp_path, monkeypatch):
     """Test loading valid portfolio CSV."""
-    portfolio_file = tmp_path / "finance_news.portfolio.csv"
+    portfolio_file = tmp_path / "vfinance_news.portfolio.csv"
     portfolio_file.write_text("symbol,name,category,notes,type\nAAPL,Apple,Tech,,\nTSLA,Tesla,Auto,,\n")
     
-    monkeypatch.setattr("finance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
+    monkeypatch.setattr("vfinance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
     positions = load_portfolio()
     
     assert len(positions) == 2
@@ -24,7 +24,7 @@ def test_load_portfolio_success(tmp_path, monkeypatch):
 def test_load_portfolio_missing_file(tmp_path, monkeypatch):
     """Test loading non-existent portfolio returns empty list."""
     portfolio_file = tmp_path / "nonexistent.csv"
-    monkeypatch.setattr("finance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
+    monkeypatch.setattr("vfinance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
     
     positions = load_portfolio()
     assert positions == []
@@ -32,8 +32,8 @@ def test_load_portfolio_missing_file(tmp_path, monkeypatch):
 
 def test_save_portfolio(tmp_path, monkeypatch):
     """Test saving portfolio to CSV."""
-    portfolio_file = tmp_path / "finance_news.portfolio.csv"
-    monkeypatch.setattr("finance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
+    portfolio_file = tmp_path / "vfinance_news.portfolio.csv"
+    monkeypatch.setattr("vfinance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
     
     positions = [
         {"symbol": "AAPL", "name": "Apple", "category": "Tech", "notes": "", "type": "stock"},
@@ -49,8 +49,8 @@ def test_save_portfolio(tmp_path, monkeypatch):
 
 def test_save_empty_portfolio(tmp_path, monkeypatch):
     """Test saving empty portfolio creates header."""
-    portfolio_file = tmp_path / "finance_news.portfolio.csv"
-    monkeypatch.setattr("finance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
+    portfolio_file = tmp_path / "vfinance_news.portfolio.csv"
+    monkeypatch.setattr("vfinance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
     
     save_portfolio([])
     
@@ -60,9 +60,9 @@ def test_save_empty_portfolio(tmp_path, monkeypatch):
 
 def test_load_portfolio_preserves_fields(tmp_path, monkeypatch):
     """Test loading portfolio preserves all fields."""
-    portfolio_file = tmp_path / "finance_news.portfolio.csv"
+    portfolio_file = tmp_path / "vfinance_news.portfolio.csv"
     portfolio_file.write_text("symbol,name,category,notes,type\nAAPL,Apple Inc,Tech,Core holding,stock\n")
-    monkeypatch.setattr("finance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
+    monkeypatch.setattr("vfinance_news.portfolio.PORTFOLIO_FILE", portfolio_file)
     
     positions = load_portfolio()
     

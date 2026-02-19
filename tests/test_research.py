@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 
-from finance_news.research import (
+from vfinance_news.research import (
     format_market_data,
     format_headlines,
     format_portfolio_news,
@@ -316,8 +316,8 @@ class TestGenerateResearchContent:
 
     def test_uses_gemini_when_available(self, sample_market_data, sample_portfolio_data):
         """Use Gemini research when available."""
-        with patch("finance_news.research.gemini_available", return_value=True):
-            with patch("finance_news.research.research_with_gemini", return_value="Gemini report") as mock_gemini:
+        with patch("vfinance_news.research.gemini_available", return_value=True):
+            with patch("vfinance_news.research.research_with_gemini", return_value="Gemini report") as mock_gemini:
                 result = generate_research_content(sample_market_data, sample_portfolio_data)
                 
                 assert result["report"] == "Gemini report"
@@ -326,7 +326,7 @@ class TestGenerateResearchContent:
 
     def test_falls_back_to_raw_report(self, sample_market_data, sample_portfolio_data):
         """Fall back to raw report when Gemini unavailable."""
-        with patch("finance_news.research.gemini_available", return_value=False):
+        with patch("vfinance_news.research.gemini_available", return_value=False):
             result = generate_research_content(sample_market_data, sample_portfolio_data)
             
             assert "## Market Data" in result["report"]
@@ -342,8 +342,8 @@ class TestGenerateResearchContent:
     def test_passes_focus_areas_to_gemini(self, sample_market_data, sample_portfolio_data):
         """Pass focus areas to Gemini research."""
         focus = ["earnings", "tech"]
-        with patch("finance_news.research.gemini_available", return_value=True):
-            with patch("finance_news.research.research_with_gemini", return_value="Report") as mock_gemini:
+        with patch("vfinance_news.research.gemini_available", return_value=True):
+            with patch("vfinance_news.research.research_with_gemini", return_value="Report") as mock_gemini:
                 generate_research_content(sample_market_data, sample_portfolio_data, focus_areas=focus)
                 
                 mock_gemini.assert_called_once()

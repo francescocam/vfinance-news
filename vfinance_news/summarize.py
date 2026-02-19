@@ -19,13 +19,13 @@ from pathlib import Path
 import urllib.parse
 import urllib.request
 from urllib.error import HTTPError, URLError
-from finance_news.utils import clamp_timeout, compute_deadline, ensure_venv, time_left
+from vfinance_news.utils import clamp_timeout, compute_deadline, ensure_venv, time_left
 
 ensure_venv()
 
-from finance_news.fetch_news import PortfolioError, get_market_news, get_portfolio_movers, get_portfolio_news
-from finance_news.ranking import rank_headlines
-from finance_news.research import generate_research_content
+from vfinance_news.fetch_news import PortfolioError, get_market_news, get_portfolio_movers, get_portfolio_news
+from vfinance_news.ranking import rank_headlines
+from vfinance_news.research import generate_research_content
 
 SCRIPT_DIR = Path(__file__).parent
 CONFIG_DIR = SCRIPT_DIR.parent / "config"
@@ -197,7 +197,7 @@ def shorten_url(url: str) -> str:
         params = urllib.parse.urlencode({'format': 'simple', 'url': url})
         req = urllib.request.Request(
             f"{api_url}?{params}",
-            headers={"User-Agent": "Mozilla/5.0 (compatible; finance-news/1.0)"}
+            headers={"User-Agent": "Mozilla/5.0 (compatible; vfinance-news/1.0)"}
         )
         
         # Set a short timeout - if it's slow, just use original
@@ -368,7 +368,7 @@ def extract_agent_reply(raw: str) -> str:
     return raw.strip()
 
 
-def run_agent_prompt(prompt: str, deadline: float | None = None, session_id: str = "finance-news-headlines", timeout: int = 45) -> str:
+def run_agent_prompt(prompt: str, deadline: float | None = None, session_id: str = "vfinance-news-headlines", timeout: int = 45) -> str:
     """Run a short prompt against openclaw agent and return raw reply text.
 
     Uses the gateway's configured default model with automatic fallback.
@@ -883,7 +883,7 @@ def select_top_headline_ids(shortlist: list[dict], deadline: float | None) -> li
         prompt_lines.append(f"{idx}. {item.get('title')} (sources: {sources})")
     prompt = "\n".join(prompt_lines)
 
-    reply = run_agent_prompt(prompt, deadline=deadline, session_id="finance-news-headlines")
+    reply = run_agent_prompt(prompt, deadline=deadline, session_id="vfinance-news-headlines")
     if reply.startswith("⚠️"):
         return []
     try:
@@ -937,7 +937,7 @@ def translate_headlines(
     print("  ↳ MiniMax API failed, falling back to openclaw agent", file=sys.stderr)
     prompt = _build_translation_prompt(titles)
 
-    reply = run_agent_prompt(prompt, deadline=deadline, session_id="finance-news-translate", timeout=60)
+    reply = run_agent_prompt(prompt, deadline=deadline, session_id="vfinance-news-translate", timeout=60)
 
     if reply.startswith("⚠️"):
         print(f"  ↳ Translation failed: {reply}", file=sys.stderr)
@@ -1190,7 +1190,7 @@ Use only the following information for the briefing:
         result = subprocess.run(
             [
                 'openclaw', 'agent',
-                '--session-id', 'finance-news-briefing',
+                '--session-id', 'vfinance-news-briefing',
                 '--message', prompt,
                 '--json',
                 '--timeout', str(cli_timeout)
@@ -1240,7 +1240,7 @@ Use only the following information for the briefing:
         result = subprocess.run(
             [
                 'openclaw', 'agent',
-                '--session-id', 'finance-news-briefing',
+                '--session-id', 'vfinance-news-briefing',
                 '--message', prompt,
                 '--json',
                 '--timeout', str(cli_timeout)
@@ -1777,21 +1777,21 @@ def generate_briefing(args):
     translations = load_translations(config)
     language = args.lang or config['language']['default']
     labels = translations.get(language, translations.get("en", {}))
-    fast_mode = args.fast or os.environ.get("FINANCE_NEWS_FAST") == "1"
-    env_deadline = os.environ.get("FINANCE_NEWS_DEADLINE_SEC")
+    fast_mode = args.fast or os.environ.get("VFINANCE_NEWS_FAST") == "1"
+    env_deadline = os.environ.get("VFINANCE_NEWS_DEADLINE_SEC")
     try:
         default_deadline = int(env_deadline) if env_deadline else 300
     except ValueError:
-        print("⚠️ Invalid FINANCE_NEWS_DEADLINE_SEC; using default 600s", file=sys.stderr)
+        print("⚠️ Invalid VFINANCE_NEWS_DEADLINE_SEC; using default 600s", file=sys.stderr)
         default_deadline = 600
     deadline_sec = args.deadline if args.deadline is not None else default_deadline
     deadline = compute_deadline(deadline_sec)
-    rss_timeout = int(os.environ.get("FINANCE_NEWS_RSS_TIMEOUT_SEC", "15"))
-    subprocess_timeout = int(os.environ.get("FINANCE_NEWS_SUBPROCESS_TIMEOUT_SEC", "30"))
+    rss_timeout = int(os.environ.get("VFINANCE_NEWS_RSS_TIMEOUT_SEC", "15"))
+    subprocess_timeout = int(os.environ.get("VFINANCE_NEWS_SUBPROCESS_TIMEOUT_SEC", "30"))
 
     if fast_mode:
-        rss_timeout = int(os.environ.get("FINANCE_NEWS_RSS_TIMEOUT_FAST_SEC", "8"))
-        subprocess_timeout = int(os.environ.get("FINANCE_NEWS_SUBPROCESS_TIMEOUT_FAST_SEC", "15"))
+        rss_timeout = int(os.environ.get("VFINANCE_NEWS_RSS_TIMEOUT_FAST_SEC", "8"))
+        subprocess_timeout = int(os.environ.get("VFINANCE_NEWS_SUBPROCESS_TIMEOUT_FAST_SEC", "15"))
     
     # Fetch fresh data
     print("📡 Fetching market data...", file=sys.stderr)
@@ -1930,8 +1930,8 @@ def generate_briefing(args):
         content = raw_content
 
     model = getattr(args, 'model', 'claude')
-    summary_primary = os.environ.get("FINANCE_NEWS_SUMMARY_MODEL")
-    summary_fallback_env = os.environ.get("FINANCE_NEWS_SUMMARY_FALLBACKS")
+    summary_primary = os.environ.get("VFINANCE_NEWS_SUMMARY_MODEL")
+    summary_fallback_env = os.environ.get("VFINANCE_NEWS_SUMMARY_FALLBACKS")
     summary_list = parse_model_list(
         summary_fallback_env,
         config.get("llm", {}).get("summary_model_order", DEFAULT_LLM_FALLBACK),

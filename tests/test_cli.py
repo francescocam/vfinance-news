@@ -2,20 +2,20 @@
 
 import pytest
 
-from finance_news import cli
+from vfinance_news import cli
 
 
-def test_finance_news_help(monkeypatch, capsys):
-    monkeypatch.setattr("sys.argv", ["finance-news", "--help"])
+def test_vfinance_news_help(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "--help"])
     with pytest.raises(SystemExit):
         cli.main()
     out = capsys.readouterr().out
-    assert "Finance News CLI" in out
+    assert "vfinance-news CLI" in out
     assert "briefing" in out
 
 
-def test_finance_news_briefing_help(monkeypatch, capsys):
-    monkeypatch.setattr("sys.argv", ["finance-news", "briefing", "--help"])
+def test_vfinance_news_briefing_help(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "briefing", "--help"])
     with pytest.raises(SystemExit):
         cli.main()
     out = capsys.readouterr().out
@@ -23,8 +23,8 @@ def test_finance_news_briefing_help(monkeypatch, capsys):
     assert "--evening" in out
 
 
-def test_finance_news_setup_help(monkeypatch, capsys):
-    monkeypatch.setattr("sys.argv", ["finance-news", "setup", "--help"])
+def test_vfinance_news_setup_help(monkeypatch, capsys):
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "setup", "--help"])
     with pytest.raises(SystemExit):
         cli.main()
     out = capsys.readouterr().out

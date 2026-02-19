@@ -14,9 +14,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from finance_news.utils import ensure_venv
+from vfinance_news.utils import ensure_venv
 
-from finance_news.fetch_news import PortfolioError, get_market_news, get_portfolio_news
+from vfinance_news.fetch_news import PortfolioError, get_market_news, get_portfolio_news
 
 SCRIPT_DIR = Path(__file__).parent
 CONFIG_DIR = SCRIPT_DIR.parent / "config"
@@ -202,7 +202,7 @@ def generate_research_report(args):
     
     config_path = CONFIG_DIR / "config.json"
     if not config_path.exists():
-        print("⚠️ No config found. Run 'finance-news setup' first.", file=sys.stderr)
+        print("⚠️ No config found. Run 'vfinance-news setup' first.", file=sys.stderr)
         sys.exit(1)
     
     # Fetch fresh data

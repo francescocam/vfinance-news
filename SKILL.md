@@ -1,5 +1,5 @@
 ---
-name: finance-news
+name: vfinance-news
 description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports WhatsApp delivery and English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries (use openbb).
 ---
 
@@ -12,7 +12,7 @@ AI-powered market news briefings with configurable language output and automated
 Run the interactive setup wizard to configure your sources, delivery channels, and schedule:
 
 ```bash
-finance-news setup
+vfinance-news setup
 ```
 
 The wizard will guide you through:
@@ -24,27 +24,27 @@ The wizard will guide you through:
 
 You can also configure specific sections:
 ```bash
-finance-news setup --section feeds     # Just RSS feeds
-finance-news setup --section delivery  # Just delivery channels
-finance-news setup --section schedule  # Just cron schedule
-finance-news setup --reset             # Reset to defaults
-finance-news config                    # Show current config
+vfinance-news setup --section feeds     # Just RSS feeds
+vfinance-news setup --section delivery  # Just delivery channels
+vfinance-news setup --section schedule  # Just cron schedule
+vfinance-news setup --reset             # Reset to defaults
+vfinance-news config                    # Show current config
 ```
 
 ## Quick Start
 
 ```bash
 # Generate morning briefing
-finance-news briefing --morning
+vfinance-news briefing --morning
 
 # View market overview
-finance-news market
+vfinance-news market
 
 # Get news for your portfolio
-finance-news portfolio
+vfinance-news portfolio
 
 # Get news for specific stock
-finance-news news AAPL
+vfinance-news news AAPL
 ```
 
 ## Features
@@ -75,60 +75,60 @@ finance-news news AAPL
 
 ```bash
 # Morning briefing (English is default)
-finance-news briefing --morning
+vfinance-news briefing --morning
 
 # Evening briefing with WhatsApp delivery
-finance-news briefing --evening --send --group "Market Briefing"
+vfinance-news briefing --evening --send --group "Market Briefing"
 
 # German language option
-finance-news briefing --morning --lang de
+vfinance-news briefing --morning --lang de
 
 # Analysis style (more detailed)
-finance-news briefing --style analysis
+vfinance-news briefing --style analysis
 ```
 
 ### Market Data
 
 ```bash
 # Market overview (indices + top headlines)
-finance-news market
+vfinance-news market
 
 # JSON output for processing
-finance-news market --json
+vfinance-news market --json
 ```
 
 ### Portfolio Management
 
 ```bash
 # List portfolio
-finance-news portfolio-list
+vfinance-news portfolio-list
 
 # Add stock
-finance-news portfolio-add NVDA --name "NVIDIA Corporation" --category Tech
+vfinance-news portfolio-add NVDA --name "NVIDIA Corporation" --category Tech
 
 # Remove stock
-finance-news portfolio-remove TSLA
+vfinance-news portfolio-remove TSLA
 
 # Import from CSV
-finance-news portfolio-import ~/my_stocks.csv
+vfinance-news portfolio-import ~/my_stocks.csv
 
 # Interactive portfolio creation
-finance-news portfolio-create
+vfinance-news portfolio-create
 ```
 
 ### Ticker News
 
 ```bash
 # News for specific stock
-finance-news news AAPL
-finance-news news TSLA
+vfinance-news news AAPL
+vfinance-news news TSLA
 ```
 
 ## Configuration
 
 ### Portfolio CSV Format
 
-Location: `~/clawd/skills/finance-news/config/portfolio.csv`
+Location: `~/clawd/skills/vfinance-news/config/portfolio.csv`
 
 ```csv
 symbol,name,category,notes
@@ -139,7 +139,7 @@ MSFT,Microsoft Corporation,Tech,
 
 ### Sources Configuration
 
-Location: `~/clawd/skills/finance-news/config/config.json` (legacy fallback: `config/sources.json`)
+Location: `~/clawd/skills/vfinance-news/config/config.json` (legacy fallback: `config/sources.json`)
 
 - RSS feeds for WSJ, Barron's, CNBC, Yahoo
 - Market indices by region
@@ -153,22 +153,22 @@ Location: `~/clawd/skills/finance-news/config/config.json` (legacy fallback: `co
 # Add morning briefing cron job
 openclaw cron add --schedule "30 6 * * 1-5" \
   --timezone "America/Los_Angeles" \
-  --command "bash ~/clawd/skills/finance-news/cron/morning.sh"
+  --command "bash ~/clawd/skills/vfinance-news/cron/morning.sh"
 
 # Add evening briefing cron job
 openclaw cron add --schedule "0 13 * * 1-5" \
   --timezone "America/Los_Angeles" \
-  --command "bash ~/clawd/skills/finance-news/cron/evening.sh"
+  --command "bash ~/clawd/skills/vfinance-news/cron/evening.sh"
 ```
 
 ### Manual Cron (crontab)
 
 ```cron
 # Morning briefing (6:30 AM PT, weekdays)
-30 6 * * 1-5 bash ~/clawd/skills/finance-news/cron/morning.sh
+30 6 * * 1-5 bash ~/clawd/skills/vfinance-news/cron/morning.sh
 
 # Evening briefing (1:00 PM PT, weekdays)
-0 13 * * 1-5 bash ~/clawd/skills/finance-news/cron/evening.sh
+0 13 * * 1-5 bash ~/clawd/skills/vfinance-news/cron/evening.sh
 ```
 
 ## Sample Output
@@ -200,7 +200,7 @@ Momentum. Fed-Kommentare könnten Volatilität auslösen.
 ### With OpenBB (existing skill)
 ```bash
 # Get detailed quote, then news
-openbb-quote AAPL && finance-news news AAPL
+openbb-quote AAPL && vfinance-news news AAPL
 ```
 
 ### With OpenClaw Agent
@@ -227,14 +227,14 @@ See `workflows/README.md` for full documentation.
 ## Files
 
 ```
-skills/finance-news/
+skills/vfinance-news/
 ├── SKILL.md              # This documentation
 ├── config/
 │   ├── portfolio.csv     # Your watchlist
 │   ├── config.json       # RSS/API/language configuration
 │   ├── alerts.json       # Price target alerts
 │   └── manual_earnings.json  # Earnings calendar overrides
-├── finance_news/
+├── vfinance_news/
 │   ├── cli.py            # Main CLI entrypoint
 │   ├── briefing.py       # Briefing generator
 │   ├── fetch_news.py     # News aggregator

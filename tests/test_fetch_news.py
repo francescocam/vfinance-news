@@ -5,8 +5,8 @@ from pathlib import Path
 import json
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from finance_news.fetch_news import fetch_market_data, fetch_rss, _get_best_feed_url, get_large_portfolio_news
-from finance_news.utils import clamp_timeout, compute_deadline
+from vfinance_news.fetch_news import fetch_market_data, fetch_rss, _get_best_feed_url, get_large_portfolio_news
+from vfinance_news.utils import clamp_timeout, compute_deadline
 
 
 @pytest.fixture
@@ -91,18 +91,18 @@ def test_get_best_feed_url_skips_non_urls():
 
 def test_clamp_timeout_respects_deadline(monkeypatch):
     start = 100.0
-    monkeypatch.setattr("finance_news.utils.time.monotonic", lambda: start)
+    monkeypatch.setattr("vfinance_news.utils.time.monotonic", lambda: start)
     deadline = compute_deadline(5)
-    monkeypatch.setattr("finance_news.utils.time.monotonic", lambda: 103.0)
+    monkeypatch.setattr("vfinance_news.utils.time.monotonic", lambda: 103.0)
 
     assert clamp_timeout(30, deadline) == 2
 
 
 def test_clamp_timeout_deadline_exceeded(monkeypatch):
     start = 200.0
-    monkeypatch.setattr("finance_news.utils.time.monotonic", lambda: start)
+    monkeypatch.setattr("vfinance_news.utils.time.monotonic", lambda: start)
     deadline = compute_deadline(1)
-    monkeypatch.setattr("finance_news.utils.time.monotonic", lambda: 205.0)
+    monkeypatch.setattr("vfinance_news.utils.time.monotonic", lambda: 205.0)
 
     with pytest.raises(TimeoutError):
         clamp_timeout(30, deadline)
@@ -124,8 +124,8 @@ def test_fetch_market_data_price_fallback(monkeypatch):
 
         return Result()
 
-    monkeypatch.setattr("finance_news.fetch_news.OPENBB_BINARY", "/bin/openbb-quote")
-    monkeypatch.setattr("finance_news.fetch_news.subprocess.run", fake_run)
+    monkeypatch.setattr("vfinance_news.fetch_news.OPENBB_BINARY", "/bin/openbb-quote")
+    monkeypatch.setattr("vfinance_news.fetch_news.subprocess.run", fake_run)
 
     no_fallback = fetch_market_data(["^GSPC"], allow_price_fallback=False)
     assert no_fallback["^GSPC"]["price"] is None
@@ -135,17 +135,17 @@ def test_fetch_market_data_price_fallback(monkeypatch):
 
 
 def test_get_large_portfolio_news_handles_none_change(monkeypatch):
-    monkeypatch.setattr("finance_news.fetch_news.get_portfolio_symbols", lambda: ["AAA", "BBB", "CCC"])
+    monkeypatch.setattr("vfinance_news.fetch_news.get_portfolio_symbols", lambda: ["AAA", "BBB", "CCC"])
     monkeypatch.setattr(
-        "finance_news.fetch_news._fetch_via_yfinance",
+        "vfinance_news.fetch_news._fetch_via_yfinance",
         lambda *_a, **_k: {
             "AAA": {"change_percent": None, "price": 110.0, "prev_close": 100.0},
             "BBB": {"change_percent": -1.5, "price": 50.0},
             "CCC": {"change_percent": 2.0, "price": 20.0},
         },
     )
-    monkeypatch.setattr("finance_news.fetch_news.fetch_market_data", lambda *_a, **_k: {})
-    monkeypatch.setattr("finance_news.fetch_news.fetch_ticker_news", lambda *_a, **_k: [])
+    monkeypatch.setattr("vfinance_news.fetch_news.fetch_market_data", lambda *_a, **_k: {})
+    monkeypatch.setattr("vfinance_news.fetch_news.fetch_ticker_news", lambda *_a, **_k: [])
 
     result = get_large_portfolio_news(limit=1, portfolio_meta={"AAA": {"name": "Alpha"}})
 
@@ -154,9 +154,9 @@ def test_get_large_portfolio_news_handles_none_change(monkeypatch):
 
 
 def test_get_large_portfolio_news_respects_top_movers_count(monkeypatch):
-    monkeypatch.setattr("finance_news.fetch_news.get_portfolio_symbols", lambda: ["AAA", "BBB", "CCC", "DDD"])
+    monkeypatch.setattr("vfinance_news.fetch_news.get_portfolio_symbols", lambda: ["AAA", "BBB", "CCC", "DDD"])
     monkeypatch.setattr(
-        "finance_news.fetch_news._fetch_via_yfinance",
+        "vfinance_news.fetch_news._fetch_via_yfinance",
         lambda *_a, **_k: {
             "AAA": {"change_percent": 5.0, "price": 10.0},
             "BBB": {"change_percent": -4.0, "price": 20.0},
@@ -164,8 +164,8 @@ def test_get_large_portfolio_news_respects_top_movers_count(monkeypatch):
             "DDD": {"change_percent": -2.0, "price": 40.0},
         },
     )
-    monkeypatch.setattr("finance_news.fetch_news.fetch_market_data", lambda *_a, **_k: {})
-    monkeypatch.setattr("finance_news.fetch_news.fetch_ticker_news", lambda *_a, **_k: [])
+    monkeypatch.setattr("vfinance_news.fetch_news.fetch_market_data", lambda *_a, **_k: {})
+    monkeypatch.setattr("vfinance_news.fetch_news.fetch_ticker_news", lambda *_a, **_k: [])
 
     result = get_large_portfolio_news(limit=1, top_movers_count=2, portfolio_meta={})
 

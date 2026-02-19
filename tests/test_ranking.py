@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from datetime import datetime, timedelta
 
-from finance_news.ranking import calculate_score, rank_headlines, classify_category
+from vfinance_news.ranking import calculate_score, rank_headlines, classify_category
 
 def test_classify_category():
     assert "macro" in classify_category("Fed signals rate cut")

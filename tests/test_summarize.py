@@ -5,8 +5,8 @@ from pathlib import Path
 
 from datetime import datetime
 
-import finance_news.summarize as summarize
-from finance_news.summarize import (
+import vfinance_news.summarize as summarize
+from vfinance_news.summarize import (
     MoverContext,
     SectorCluster,
     WatchpointsData,

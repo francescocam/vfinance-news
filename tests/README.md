@@ -10,7 +10,7 @@ pip install -r requirements-test.txt
 pytest
 
 # Run with coverage
-pytest --cov=finance_news --cov-report=html
+pytest --cov=vfinance_news --cov-report=html
 
 # Run specific test file
 pytest tests/test_portfolio.py

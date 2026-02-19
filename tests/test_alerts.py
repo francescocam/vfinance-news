@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 
-from finance_news.alerts import check_alerts, load_alerts, save_alerts
+from vfinance_news.alerts import check_alerts, load_alerts, save_alerts
 
 @pytest.fixture
 def mock_alerts_data():
@@ -33,8 +33,8 @@ def mock_alerts_data():
 
 def test_check_alerts_trigger(mock_alerts_data, monkeypatch, tmp_path):
     # Setup mock alerts file
-    alerts_file = tmp_path / "finance_news.alerts.json"
-    monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+    alerts_file = tmp_path / "vfinance_news.alerts.json"
+    monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
     alerts_file.write_text(json.dumps(mock_alerts_data))
     
     # Mock market data: AAPL is under target, TSLA is over
@@ -43,7 +43,7 @@ def test_check_alerts_trigger(mock_alerts_data, monkeypatch, tmp_path):
         "TSLA": {"price": 210.0}
     }
     
-    with patch("finance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
+    with patch("vfinance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
         mock_fmd = Mock(return_value=mock_quotes)
         mock_fmd_getter.return_value = mock_fmd
         
@@ -68,13 +68,13 @@ def test_check_alerts_deduplication(mock_alerts_data, monkeypatch, tmp_path):
     mock_alerts_data["alerts"][0]["last_triggered"] = now.isoformat()
     mock_alerts_data["alerts"][0]["triggered_count"] = 1
     
-    alerts_file = tmp_path / "finance_news.alerts.json"
-    monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+    alerts_file = tmp_path / "vfinance_news.alerts.json"
+    monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
     alerts_file.write_text(json.dumps(mock_alerts_data))
     
     mock_quotes = {"AAPL": {"price": 140.0}, "TSLA": {"price": 250.0}}
     
-    with patch("finance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
+    with patch("vfinance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
         mock_fmd = Mock(return_value=mock_quotes)
         mock_fmd_getter.return_value = mock_fmd
         
@@ -89,13 +89,13 @@ def test_check_alerts_snooze(mock_alerts_data, monkeypatch, tmp_path):
     future_date = datetime.now() + timedelta(days=1)
     mock_alerts_data["alerts"][0]["snooze_until"] = future_date.isoformat()
     
-    alerts_file = tmp_path / "finance_news.alerts.json"
-    monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+    alerts_file = tmp_path / "vfinance_news.alerts.json"
+    monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
     alerts_file.write_text(json.dumps(mock_alerts_data))
     
     mock_quotes = {"AAPL": {"price": 140.0}, "TSLA": {"price": 190.0}}
     
-    with patch("finance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
+    with patch("vfinance_news.alerts.get_fetch_market_data") as mock_fmd_getter:
         mock_fmd = Mock(return_value=mock_quotes)
         mock_fmd_getter.return_value = mock_fmd
         

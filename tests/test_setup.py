@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import json
 from unittest.mock import patch
-from finance_news.setup import load_sources, save_sources, get_default_sources, setup_language, setup_markets
+from vfinance_news.setup import load_sources, save_sources, get_default_sources, setup_language, setup_markets
 
 
 def test_load_sources_missing_file(tmp_path, monkeypatch):
@@ -13,7 +13,7 @@ def test_load_sources_missing_file(tmp_path, monkeypatch):
     sources_file = tmp_path / "sources.json"
     
     # Patch both path constants to use temp file
-    monkeypatch.setattr("finance_news.setup.SOURCES_FILE", sources_file)
+    monkeypatch.setattr("vfinance_news.setup.SOURCES_FILE", sources_file)
     
     # File doesn't exist, so load_sources should call get_default_sources
     sources = load_sources()
@@ -25,7 +25,7 @@ def test_load_sources_missing_file(tmp_path, monkeypatch):
 def test_save_sources(tmp_path, monkeypatch):
     """Test saving sources to JSON."""
     sources_file = tmp_path / "sources.json"
-    monkeypatch.setattr("finance_news.setup.SOURCES_FILE", sources_file)
+    monkeypatch.setattr("vfinance_news.setup.SOURCES_FILE", sources_file)
     
     sources = {
         "rss_feeds": {
@@ -58,8 +58,8 @@ def test_get_default_sources():
                for k in feeds.keys())
 
 
-@patch("finance_news.setup.prompt", side_effect=["en"])
-@patch("finance_news.setup.save_sources")
+@patch("vfinance_news.setup.prompt", side_effect=["en"])
+@patch("vfinance_news.setup.save_sources")
 def test_setup_language(mock_save, mock_prompt):
     """Test language setup function."""
     sources = {"language": {"supported": ["en", "de"], "default": "de"}}
@@ -71,8 +71,8 @@ def test_setup_language(mock_save, mock_prompt):
     assert sources["language"]["default"] == "en"
 
 
-@patch("finance_news.setup.prompt_bool", side_effect=[True, False])
-@patch("finance_news.setup.save_sources")
+@patch("vfinance_news.setup.prompt_bool", side_effect=[True, False])
+@patch("vfinance_news.setup.save_sources")
 def test_setup_markets(mock_save, mock_prompt):
     """Test markets setup function."""
     sources = {"markets": {"us": {"enabled": False}, "eu": {"enabled": False}}}

@@ -19,7 +19,7 @@ import urllib.request
 import yfinance as yf
 import pandas as pd
 
-from finance_news.utils import clamp_timeout, compute_deadline, ensure_venv, time_left
+from vfinance_news.utils import clamp_timeout, compute_deadline, ensure_venv, time_left
 
 # Retry configuration
 DEFAULT_MAX_RETRIES = 3
@@ -169,7 +169,7 @@ def get_openbb_binary() -> str:
         "1. Install via pip: pip install openbb\n"
         "2. Use existing install: export OPENBB_QUOTE_BIN=/path/to/openbb-quote\n"
         "3. Add to PATH: export PATH=$PATH:$HOME/.local/bin\n\n"
-        "See: https://github.com/kesslerio/finance-news-openclaw-skill#dependencies"
+        "See: https://github.com/kesslerio/vfinance-news-openclaw-skill#dependencies"
     )
 
 

@@ -10,7 +10,7 @@ from io import StringIO
 
 import pytest
 
-from finance_news.alerts import (
+from vfinance_news.alerts import (
     load_alerts,
     save_alerts,
     get_alert_by_ticker,
@@ -61,7 +61,7 @@ def sample_alerts_data():
 @pytest.fixture
 def alerts_file(tmp_path, sample_alerts_data):
     """Create a temporary alerts file."""
-    alerts_path = tmp_path / "finance_news.alerts.json"
+    alerts_path = tmp_path / "vfinance_news.alerts.json"
     alerts_path.write_text(json.dumps(sample_alerts_data))
     return alerts_path
 
@@ -71,7 +71,7 @@ class TestLoadAlerts:
 
     def test_load_existing_file(self, alerts_file, monkeypatch):
         """Load alerts from existing file."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         data = load_alerts()
         
         assert "_meta" in data
@@ -81,7 +81,7 @@ class TestLoadAlerts:
     def test_load_missing_file(self, tmp_path, monkeypatch):
         """Return default structure when file doesn't exist."""
         missing_path = tmp_path / "missing.json"
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", missing_path)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", missing_path)
         
         data = load_alerts()
         
@@ -95,8 +95,8 @@ class TestSaveAlerts:
 
     def test_save_updates_timestamp(self, tmp_path, sample_alerts_data, monkeypatch):
         """Save should update the updated_at field."""
-        alerts_path = tmp_path / "finance_news.alerts.json"
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_path)
+        alerts_path = tmp_path / "vfinance_news.alerts.json"
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_path)
         
         save_alerts(sample_alerts_data)
         
@@ -105,8 +105,8 @@ class TestSaveAlerts:
 
     def test_save_preserves_data(self, tmp_path, sample_alerts_data, monkeypatch):
         """Save should preserve all alert data."""
-        alerts_path = tmp_path / "finance_news.alerts.json"
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_path)
+        alerts_path = tmp_path / "vfinance_news.alerts.json"
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_path)
         
         save_alerts(sample_alerts_data)
         
@@ -179,9 +179,9 @@ class TestCmdList:
 
     def test_list_empty_alerts(self, tmp_path, monkeypatch, capsys):
         """List with no alerts."""
-        alerts_path = tmp_path / "finance_news.alerts.json"
+        alerts_path = tmp_path / "vfinance_news.alerts.json"
         alerts_path.write_text(json.dumps({"_meta": {}, "alerts": []}))
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_path)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_path)
         
         cmd_list(Namespace())
         
@@ -190,7 +190,7 @@ class TestCmdList:
 
     def test_list_active_alerts(self, alerts_file, monkeypatch, capsys):
         """List active alerts."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         cmd_list(Namespace())
         
@@ -208,9 +208,9 @@ class TestCmdList:
                 {"ticker": "AAPL", "target_price": 150, "currency": "USD", "snooze_until": future}
             ],
         }
-        alerts_path = tmp_path / "finance_news.alerts.json"
+        alerts_path = tmp_path / "vfinance_news.alerts.json"
         alerts_path.write_text(json.dumps(data))
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_path)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_path)
         
         cmd_list(Namespace())
         
@@ -224,9 +224,9 @@ class TestCmdSet:
 
     def test_set_new_alert(self, alerts_file, monkeypatch, capsys):
         """Set a new alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
-        with patch("finance_news.alerts.get_fetch_market_data") as mock_fmd:
+        with patch("vfinance_news.alerts.get_fetch_market_data") as mock_fmd:
             mock_fmd.return_value = Mock(return_value={"GOOG": {"price": 175.0}})
             
             args = Namespace(ticker="GOOG", target=150.0, currency="USD", note="Buy Google", user="art")
@@ -242,7 +242,7 @@ class TestCmdSet:
 
     def test_set_duplicate_alert(self, alerts_file, monkeypatch, capsys):
         """Cannot set duplicate alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", target=140.0, currency="USD", note="", user="")
         cmd_set(args)
@@ -252,7 +252,7 @@ class TestCmdSet:
 
     def test_set_invalid_target(self, alerts_file, monkeypatch, capsys):
         """Reject invalid target price."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="GOOG", target=-10.0, currency="USD", note="", user="")
         cmd_set(args)
@@ -262,7 +262,7 @@ class TestCmdSet:
 
     def test_set_invalid_currency(self, alerts_file, monkeypatch, capsys):
         """Reject invalid currency."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="GOOG", target=150.0, currency="XYZ", note="", user="")
         cmd_set(args)
@@ -276,7 +276,7 @@ class TestCmdDelete:
 
     def test_delete_existing_alert(self, alerts_file, monkeypatch, capsys):
         """Delete an existing alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL")
         cmd_delete(args)
@@ -289,7 +289,7 @@ class TestCmdDelete:
 
     def test_delete_nonexistent_alert(self, alerts_file, monkeypatch, capsys):
         """Cannot delete non-existent alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="GOOG")
         cmd_delete(args)
@@ -303,7 +303,7 @@ class TestCmdSnooze:
 
     def test_snooze_alert(self, alerts_file, monkeypatch, capsys):
         """Snooze an alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", days=7)
         cmd_snooze(args)
@@ -317,7 +317,7 @@ class TestCmdSnooze:
 
     def test_snooze_nonexistent_alert(self, alerts_file, monkeypatch, capsys):
         """Cannot snooze non-existent alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="GOOG", days=7)
         cmd_snooze(args)
@@ -327,7 +327,7 @@ class TestCmdSnooze:
 
     def test_snooze_default_days(self, alerts_file, monkeypatch, capsys):
         """Default snooze is 7 days."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", days=None)
         cmd_snooze(args)
@@ -341,7 +341,7 @@ class TestCmdUpdate:
 
     def test_update_target_price(self, alerts_file, monkeypatch, capsys):
         """Update alert target price."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", target=140.0, note=None)
         cmd_update(args)
@@ -357,7 +357,7 @@ class TestCmdUpdate:
 
     def test_update_with_note(self, alerts_file, monkeypatch, capsys):
         """Update alert with new note."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", target=145.0, note="New buy zone")
         cmd_update(args)
@@ -368,7 +368,7 @@ class TestCmdUpdate:
 
     def test_update_nonexistent_alert(self, alerts_file, monkeypatch, capsys):
         """Cannot update non-existent alert."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="GOOG", target=150.0, note=None)
         cmd_update(args)
@@ -378,7 +378,7 @@ class TestCmdUpdate:
 
     def test_update_invalid_target(self, alerts_file, monkeypatch, capsys):
         """Reject invalid target price on update."""
-        monkeypatch.setattr("finance_news.alerts.ALERTS_FILE", alerts_file)
+        monkeypatch.setattr("vfinance_news.alerts.ALERTS_FILE", alerts_file)
         
         args = Namespace(ticker="AAPL", target=-10.0, note=None)
         cmd_update(args)

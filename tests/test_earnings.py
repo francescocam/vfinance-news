@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime, timedelta
 
-from finance_news.earnings import (
+from vfinance_news.earnings import (
     fetch_all_earnings_finnhub,
     get_briefing_section,
     load_earnings_cache,
@@ -39,13 +39,13 @@ def mock_finnhub_response():
     }
 
 def test_fetch_earnings_finnhub_success(mock_finnhub_response):
-    with patch("finance_news.earnings.urlopen") as mock_urlopen:
+    with patch("vfinance_news.earnings.urlopen") as mock_urlopen:
         mock_resp = MagicMock()
         mock_resp.read.return_value = json.dumps(mock_finnhub_response).encode("utf-8")
         mock_resp.__enter__.return_value = mock_resp
         mock_urlopen.return_value = mock_resp
         
-        with patch("finance_news.earnings.get_finnhub_key", return_value="fake_key"):
+        with patch("vfinance_news.earnings.get_finnhub_key", return_value="fake_key"):
             result = fetch_all_earnings_finnhub(days_ahead=30)
             
             assert "AAPL" in result
@@ -56,8 +56,8 @@ def test_fetch_earnings_finnhub_success(mock_finnhub_response):
 
 def test_cache_logic(tmp_path, monkeypatch):
     cache_file = tmp_path / "earnings_calendar.json"
-    monkeypatch.setattr("finance_news.earnings.EARNINGS_CACHE", cache_file)
-    monkeypatch.setattr("finance_news.earnings.CACHE_DIR", tmp_path)
+    monkeypatch.setattr("vfinance_news.earnings.EARNINGS_CACHE", cache_file)
+    monkeypatch.setattr("vfinance_news.earnings.CACHE_DIR", tmp_path)
     
     test_data = {
         "last_updated": "2026-01-27T08:00:00",
@@ -84,9 +84,9 @@ def test_get_briefing_section_output():
         }
     }
     
-    with patch("finance_news.earnings.load_portfolio", return_value=mock_portfolio), \
-         patch("finance_news.earnings.load_earnings_cache", return_value=mock_cache), \
-         patch("finance_news.earnings.refresh_earnings", return_value=mock_cache):
+    with patch("vfinance_news.earnings.load_portfolio", return_value=mock_portfolio), \
+         patch("vfinance_news.earnings.load_earnings_cache", return_value=mock_cache), \
+         patch("vfinance_news.earnings.refresh_earnings", return_value=mock_cache):
         
         section = get_briefing_section()
         assert "EARNINGS TODAY" in section
@@ -98,9 +98,9 @@ def test_get_briefing_section_output():
 def test_refresh_earnings_force(mock_finnhub_response):
     mock_portfolio = [{"symbol": "AAPL", "name": "Apple"}]
     
-    with patch("finance_news.earnings.get_finnhub_key", return_value="fake_key"), \
-         patch("finance_news.earnings.fetch_all_earnings_finnhub", return_value={"AAPL": mock_finnhub_response["earningsCalendar"][0]}), \
-         patch("finance_news.earnings.save_earnings_cache") as mock_save:
+    with patch("vfinance_news.earnings.get_finnhub_key", return_value="fake_key"), \
+         patch("vfinance_news.earnings.fetch_all_earnings_finnhub", return_value={"AAPL": mock_finnhub_response["earningsCalendar"][0]}), \
+         patch("vfinance_news.earnings.save_earnings_cache") as mock_save:
         
         refresh_earnings(mock_portfolio, force=True)
         assert mock_save.called

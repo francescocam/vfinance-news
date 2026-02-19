@@ -7,8 +7,8 @@
 set -e
 
 export SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-export FINANCE_NEWS_TARGET="${FINANCE_NEWS_TARGET:?FINANCE_NEWS_TARGET must be set}"
-export FINANCE_NEWS_CHANNEL="${FINANCE_NEWS_CHANNEL:?FINANCE_NEWS_CHANNEL must be set}"
+export VFINANCE_NEWS_TARGET="${VFINANCE_NEWS_TARGET:?VFINANCE_NEWS_TARGET must be set}"
+export VFINANCE_NEWS_CHANNEL="${VFINANCE_NEWS_CHANNEL:?VFINANCE_NEWS_CHANNEL must be set}"
 
 echo "[$(date)] Starting morning briefing via Lobster..."
 

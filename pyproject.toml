@@ -1,5 +1,5 @@
 [project]
-name = "finance-news"
+name = "vfinance-news"
 version = "0.0.1"
 description = "Finance news aggregation and market briefing skill for OpenClaw"
 readme = "README.md"
@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-finance-news = "finance_news.cli:main"
+vfinance-news = "vfinance_news.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -27,7 +27,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["finance_news"]
+packages = ["vfinance_news"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -36,8 +36,8 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["finance_news"]
-omit = ["finance_news/__pycache__/*"]
+source = ["vfinance_news"]
+omit = ["vfinance_news/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [

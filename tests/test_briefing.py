@@ -5,7 +5,7 @@ import pytest
 from unittest.mock import Mock, patch
 import subprocess
 
-from finance_news.briefing import generate_and_send
+from vfinance_news.briefing import generate_and_send
 
 def test_generate_and_send_success():
     # Mock subprocess.run for summarize.py
@@ -15,7 +15,7 @@ def test_generate_and_send_success():
         "summary": "Full Summary"
     }
     
-    with patch("finance_news.briefing.subprocess.run") as mock_run:
+    with patch("vfinance_news.briefing.subprocess.run") as mock_run:
         mock_result = Mock()
         mock_result.returncode = 0
         mock_result.stdout = json.dumps(mock_briefing_data)
@@ -36,10 +36,10 @@ def test_generate_and_send_success():
         
         assert result == "Macro Summary"
         assert mock_run.called
-        # Check if finance_news.summarize module was called with correct args
+        # Check if vfinance_news.summarize module was called with correct args
         call_args = mock_run.call_args[0][0]
         assert call_args[1] == "-m"
-        assert call_args[2] == "finance_news.summarize"
+        assert call_args[2] == "vfinance_news.summarize"
         assert "--time" in call_args
         assert "morning" in call_args
 
@@ -49,8 +49,8 @@ def test_generate_and_send_with_whatsapp():
         "portfolio_message": "Portfolio Summary"
     }
     
-    with patch("finance_news.briefing.subprocess.run") as mock_run, \
-         patch("finance_news.briefing.send_to_whatsapp") as mock_send:
+    with patch("vfinance_news.briefing.subprocess.run") as mock_run, \
+         patch("vfinance_news.briefing.send_to_whatsapp") as mock_send:
         
         # First call is summarize.py
         mock_result = Mock()
@@ -78,7 +78,7 @@ def test_generate_and_send_with_whatsapp():
         mock_send.assert_any_call("Portfolio Summary", "Test Group")
 
 def test_generate_and_send_failure():
-    with patch("finance_news.briefing.subprocess.run") as mock_run:
+    with patch("vfinance_news.briefing.subprocess.run") as mock_run:
         mock_result = Mock()
         mock_result.returncode = 1
         mock_result.stderr = "Error occurred"

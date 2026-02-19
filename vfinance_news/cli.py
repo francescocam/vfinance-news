@@ -1,10 +1,10 @@
-"""Python CLI entrypoint for finance-news."""
+"""Python CLI entrypoint for vfinance-news."""
 
 import argparse
 import sys
 
 def _news_command(symbol: str) -> int:
-    from finance_news import fetch_news
+    from vfinance_news import fetch_news
 
     articles = fetch_news.fetch_ticker_news(symbol, 10)
     print(f"\n📰 News for {symbol}\n")
@@ -15,7 +15,7 @@ def _news_command(symbol: str) -> int:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Finance News CLI")
+    parser = argparse.ArgumentParser(description="vfinance-news CLI")
     subparsers = parser.add_subparsers(dest="command")
 
     subparsers.add_parser("setup", help="Interactive setup wizard")
@@ -53,46 +53,46 @@ def main() -> None:
         return
 
     if args.command == "setup":
-        from finance_news import setup
+        from vfinance_news import setup
 
-        sys.argv = ["finance-news setup"] + ["wizard"] + remaining
+        sys.argv = ["vfinance-news setup"] + ["wizard"] + remaining
         setup.main()
         return
     if args.command == "config":
-        from finance_news import setup
+        from vfinance_news import setup
 
-        sys.argv = ["finance-news config", "show"] + remaining
+        sys.argv = ["vfinance-news config", "show"] + remaining
         setup.main()
         return
 
     if args.command == "briefing":
-        from finance_news import briefing
+        from vfinance_news import briefing
 
         forwarded = list(remaining)
         if args.morning and "--time" not in forwarded:
             forwarded = ["--time", "morning"] + forwarded
         if args.evening and "--time" not in forwarded:
             forwarded = ["--time", "evening"] + forwarded
-        sys.argv = ["finance-news briefing"] + forwarded
+        sys.argv = ["vfinance-news briefing"] + forwarded
         briefing.main()
         return
 
     if args.command == "market":
-        from finance_news import fetch_news
+        from vfinance_news import fetch_news
 
-        sys.argv = ["finance-news market", "market"] + remaining
+        sys.argv = ["vfinance-news market", "market"] + remaining
         fetch_news.main()
         return
     if args.command == "portfolio":
-        from finance_news import fetch_news
+        from vfinance_news import fetch_news
 
-        sys.argv = ["finance-news portfolio", "portfolio"] + remaining
+        sys.argv = ["vfinance-news portfolio", "portfolio"] + remaining
         fetch_news.main()
         return
     if args.command == "portfolio-only":
-        from finance_news import fetch_news
+        from vfinance_news import fetch_news
 
-        sys.argv = ["finance-news portfolio-only", "portfolio-only"] + remaining
+        sys.argv = ["vfinance-news portfolio-only", "portfolio-only"] + remaining
         fetch_news.main()
         return
     if args.command == "news":
@@ -100,46 +100,46 @@ def main() -> None:
         return
 
     if args.command == "alerts":
-        from finance_news import alerts
+        from vfinance_news import alerts
 
-        sys.argv = ["finance-news alerts"] + remaining
+        sys.argv = ["vfinance-news alerts"] + remaining
         alerts.main()
         return
     if args.command == "earnings":
-        from finance_news import earnings
+        from vfinance_news import earnings
 
-        sys.argv = ["finance-news earnings"] + remaining
+        sys.argv = ["vfinance-news earnings"] + remaining
         earnings.main()
         return
 
     if args.command == "portfolio-list":
-        from finance_news import portfolio
+        from vfinance_news import portfolio
 
-        sys.argv = ["finance-news portfolio-list", "list"] + remaining
+        sys.argv = ["vfinance-news portfolio-list", "list"] + remaining
         portfolio.main()
         return
     if args.command == "portfolio-add":
-        from finance_news import portfolio
+        from vfinance_news import portfolio
 
-        sys.argv = ["finance-news portfolio-add", "add"] + remaining
+        sys.argv = ["vfinance-news portfolio-add", "add"] + remaining
         portfolio.main()
         return
     if args.command == "portfolio-remove":
-        from finance_news import portfolio
+        from vfinance_news import portfolio
 
-        sys.argv = ["finance-news portfolio-remove", "remove"] + remaining
+        sys.argv = ["vfinance-news portfolio-remove", "remove"] + remaining
         portfolio.main()
         return
     if args.command == "portfolio-import":
-        from finance_news import portfolio
+        from vfinance_news import portfolio
 
-        sys.argv = ["finance-news portfolio-import", "import"] + remaining
+        sys.argv = ["vfinance-news portfolio-import", "import"] + remaining
         portfolio.main()
         return
     if args.command == "portfolio-create":
-        from finance_news import portfolio
+        from vfinance_news import portfolio
 
-        sys.argv = ["finance-news portfolio-create", "create"] + remaining
+        sys.argv = ["vfinance-news portfolio-create", "create"] + remaining
         portfolio.main()
         return
 

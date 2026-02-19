@@ -1,0 +1,1 @@
+"""vfinance-news package."""

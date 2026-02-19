@@ -10,7 +10,7 @@
 
 ## Overview
 
-WSJ and Barron's are premium financial news sources that require subscriptions. This guide explains how to authenticate and use premium sources with the finance-news skill.
+WSJ and Barron's are premium financial news sources that require subscriptions. This guide explains how to authenticate and use premium sources with the vfinance-news skill.
 
 **Recommendation:** For simplicity, we recommend using **free sources only** (Yahoo Finance, CNBC, MarketWatch). Premium sources add complexity and maintenance burden.
 

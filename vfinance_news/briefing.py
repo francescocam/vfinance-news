@@ -11,7 +11,7 @@ import subprocess
 import sys
 from datetime import datetime
 
-from finance_news.utils import ensure_venv
+from vfinance_news.utils import ensure_venv
 
 ensure_venv()
 
@@ -19,9 +19,9 @@ ensure_venv()
 def send_to_whatsapp(message: str, group_name: str | None = None):
     """Send message to WhatsApp group via openclaw message tool."""
     if not group_name:
-        group_name = os.environ.get('FINANCE_NEWS_TARGET', '')
+        group_name = os.environ.get('VFINANCE_NEWS_TARGET', '')
     if not group_name:
-        print("❌ No target specified. Set FINANCE_NEWS_TARGET env var or use --group", file=sys.stderr)
+        print("❌ No target specified. Set VFINANCE_NEWS_TARGET env var or use --group", file=sys.stderr)
         return False
     # Use openclaw message tool
     try:
@@ -61,7 +61,7 @@ def generate_and_send(args):
     
     # Generate the briefing
     cmd = [
-        sys.executable, '-m', 'finance_news.summarize',
+        sys.executable, '-m', 'vfinance_news.summarize',
         '--time', briefing_time,
         '--style', args.style,
         '--lang', args.lang
@@ -145,8 +145,8 @@ def main():
                         help='Output language')
     parser.add_argument('--send', action='store_true',
                         help='Send to WhatsApp group')
-    parser.add_argument('--group', default=os.environ.get('FINANCE_NEWS_TARGET', ''),
-                        help='WhatsApp group name or JID (default: FINANCE_NEWS_TARGET env var)')
+    parser.add_argument('--group', default=os.environ.get('VFINANCE_NEWS_TARGET', ''),
+                        help='WhatsApp group name or JID (default: VFINANCE_NEWS_TARGET env var)')
     parser.add_argument('--json', action='store_true',
                         help='Output as JSON')
     parser.add_argument('--deadline', type=int, default=None,

@@ -1,6 +1,6 @@
 # Lobster Workflows
 
-This directory contains [Lobster](https://github.com/openclaw/lobster) workflow definitions for the finance-news skill.
+This directory contains [Lobster](https://github.com/openclaw/lobster) workflow definitions for the vfinance-news skill.
 
 ## Available Workflows
 
@@ -11,7 +11,7 @@ Generates a market briefing and sends to WhatsApp with an approval gate.
 **Usage:**
 ```bash
 # Run via Lobster CLI
-lobster "workflows.run --file ~/projects/finance-news-openclaw-skill/workflows/briefing.yaml"
+lobster "workflows.run --file ~/projects/vfinance-news-openclaw-skill/workflows/briefing.yaml"
 
 # With custom args
 lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"time\":\"evening\",\"lang\":\"en\"}'"
@@ -29,8 +29,8 @@ lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"time\":\"e
 **Environment Variables:**
 | Variable | Description |
 |----------|-------------|
-| `FINANCE_NEWS_CHANNEL` | Default channel: `whatsapp` or `telegram` |
-| `FINANCE_NEWS_TARGET` | Default target (group name, phone, chat ID) |
+| `VFINANCE_NEWS_CHANNEL` | Default channel: `whatsapp` or `telegram` |
+| `VFINANCE_NEWS_TARGET` | Default target (group name, phone, chat ID) |
 
 **Examples:**
 ```bash
@@ -65,8 +65,8 @@ To make these workflows available as named workflows in Lobster:
 // In lobster/src/workflows/registry.ts
 export const workflowRegistry = {
   // ... existing workflows
-  'finance.briefing': {
-    name: 'finance.briefing',
+  'vfinance.briefing': {
+    name: 'vfinance.briefing',
     description: 'Generate market briefing with approval gate for WhatsApp/Telegram',
     argsSchema: {
       type: 'object',

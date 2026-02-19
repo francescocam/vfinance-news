@@ -23,7 +23,7 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from finance_news.utils import ensure_venv
+from vfinance_news.utils import ensure_venv
 
 ensure_venv()
 
@@ -33,7 +33,7 @@ fetch_market_data = None
 def get_fetch_market_data():
     global fetch_market_data
     if fetch_market_data is None:
-        from finance_news.fetch_news import fetch_market_data as fmd
+        from vfinance_news.fetch_news import fetch_market_data as fmd
         fetch_market_data = fmd
     return fetch_market_data
 

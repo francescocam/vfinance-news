@@ -4,7 +4,7 @@
 # Schedule: Sunday 7:00 AM PT (before market week starts)
 # Sends upcoming week's earnings calendar to WhatsApp/Telegram
 
-name: finance.earnings.weekly.cron
+name: vfinance.earnings.weekly.cron
 description: Send weekly earnings preview for portfolio stocks
 
 args:
@@ -12,18 +12,18 @@ args:
     default: en
     description: "Language: en or de"
   channel:
-    default: "${FINANCE_NEWS_CHANNEL:-whatsapp}"
+    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
     description: "Delivery channel: whatsapp or telegram"
   target:
-    default: "${FINANCE_NEWS_TARGET}"
+    default: "${VFINANCE_NEWS_TARGET}"
     description: "Target: group name, JID, or chat ID"
 
 steps:
   # Check earnings calendar for upcoming week
   - id: check_earnings
     command: |
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/finance-news}"
-      "$SKILL_DIR/.venv/bin/python" -m finance_news.earnings check --week --lang "${lang}"
+      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
+      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --week --lang "${lang}"
     description: Get upcoming week's earnings calendar
 
   # Send earnings alert if there's content

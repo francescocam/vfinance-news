@@ -363,7 +363,7 @@ wheels = [
 ]
 
 [[package]]
-name = "finance-news"
+name = "vfinance-news"
 version = "1.0.0"
 source = { editable = "." }
 dependencies = [

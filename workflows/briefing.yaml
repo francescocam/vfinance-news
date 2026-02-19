@@ -6,7 +6,7 @@
 # 2. Halts for approval before sending
 # 3. Sends to messaging channel after approval
 
-name: finance.briefing
+name: vfinance.briefing
 description: Generate market briefing and send to WhatsApp/Telegram with approval gate
 
 args:
@@ -17,11 +17,11 @@ args:
     default: de
     description: "Language: en or de"
   channel:
-    default: "${FINANCE_NEWS_CHANNEL:-whatsapp}"
+    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
     description: "Delivery channel: whatsapp or telegram"
   target:
-    default: "${FINANCE_NEWS_TARGET}"
-    description: "Target: group name, JID, phone number, or Telegram chat ID (requires FINANCE_NEWS_TARGET env var if not specified)"
+    default: "${VFINANCE_NEWS_TARGET}"
+    description: "Target: group name, JID, phone number, or Telegram chat ID (requires VFINANCE_NEWS_TARGET env var if not specified)"
   fast:
     default: "false"
     description: "Use fast mode: true or false"
@@ -30,16 +30,16 @@ steps:
   # Generate briefing and save to temp file
   - id: generate
     command: |
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/finance-news}"
+      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
       FAST_FLAG=""
       if [ "${fast}" = "true" ]; then FAST_FLAG="--fast"; fi
       OUTFILE="/tmp/lobster-briefing-$$.json"
-      FINANCE_NEWS_BIN="${FINANCE_NEWS_BIN:-$SKILL_DIR/.venv/bin/finance-news}"
-      if [ ! -x "$FINANCE_NEWS_BIN" ]; then
-        echo "❌ Missing CLI at $FINANCE_NEWS_BIN. Install with: python3 -m venv $SKILL_DIR/.venv && $SKILL_DIR/.venv/bin/pip install -e $SKILL_DIR"
+      VFINANCE_NEWS_BIN="${VFINANCE_NEWS_BIN:-$SKILL_DIR/.venv/bin/vfinance-news}"
+      if [ ! -x "$VFINANCE_NEWS_BIN" ]; then
+        echo "❌ Missing CLI at $VFINANCE_NEWS_BIN. Install with: python3 -m venv $SKILL_DIR/.venv && $SKILL_DIR/.venv/bin/pip install -e $SKILL_DIR"
         exit 1
       fi
-      "$FINANCE_NEWS_BIN" briefing \
+      "$VFINANCE_NEWS_BIN" briefing \
         --time "${time}" \
         --style briefing \
         --lang "${lang}" \
@@ -54,9 +54,9 @@ steps:
     command: |
       OUTFILE=$(cat)
       OUTFILE=$(echo "$OUTFILE" | tr -d '\n')
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/finance-news}"
+      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
       if [ "${lang}" = "de" ]; then
-        "$SKILL_DIR/.venv/bin/python" -m finance_news.translate_portfolio "$OUTFILE" --lang de || true
+        "$SKILL_DIR/.venv/bin/python" -m vfinance_news.translate_portfolio "$OUTFILE" --lang de || true
       fi
       echo "$OUTFILE"
     stdin: $generate.stdout

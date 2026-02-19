@@ -144,7 +144,7 @@ def fetch_all_earnings_finnhub(days_ahead: int = 60) -> dict:
     url = f"https://finnhub.io/api/v1/calendar/earnings?from={from_date}&to={to_date}&token={finnhub_key}"
     
     try:
-        req = Request(url, headers={"User-Agent": "finance-news/1.0"})
+        req = Request(url, headers={"User-Agent": "vfinance-news/1.0"})
         with urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             

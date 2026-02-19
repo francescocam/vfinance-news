@@ -4,7 +4,7 @@
 # Schedule: 2:00 PM PT / 5:00 PM ET (1 hour after market close)
 # Checks price alerts against current prices (including after-hours)
 
-name: finance.alerts.cron
+name: vfinance.alerts.cron
 description: Check price alerts and send triggered alerts to WhatsApp/Telegram
 
 args:
@@ -12,18 +12,18 @@ args:
     default: en
     description: "Language: en or de"
   channel:
-    default: "${FINANCE_NEWS_CHANNEL:-whatsapp}"
+    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
     description: "Delivery channel: whatsapp or telegram"
   target:
-    default: "${FINANCE_NEWS_TARGET}"
+    default: "${VFINANCE_NEWS_TARGET}"
     description: "Target: group name, JID, or chat ID"
 
 steps:
   # Check alerts against current prices
   - id: check_alerts
     command: |
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/finance-news}"
-      "$SKILL_DIR/.venv/bin/python" -m finance_news.alerts check --lang "${lang}"
+      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
+      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.alerts check --lang "${lang}"
     description: Check price alerts against current prices
 
   # Send alert message if there's content

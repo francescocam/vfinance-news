@@ -19,19 +19,19 @@ AI-powered market news briefings tailored to value investors with configurable l
 
 ```bash
 # Generate a briefing
-finance-news briefing --morning --lang de
+vfinance-news briefing --morning --lang de
 
 # Use fast mode + deadline (recommended)
-finance-news briefing --morning --lang de --fast --deadline 300
+vfinance-news briefing --morning --lang de --fast --deadline 300
 ```
 
 ## Environment Variables
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `FINANCE_NEWS_TARGET` | Delivery target (WhatsApp JID, group name, or Telegram chat ID) | *Required* |
-| `FINANCE_NEWS_CHANNEL` | Delivery channel | `whatsapp` or `telegram` |
-| `SKILL_DIR` | Path to skill directory (for Lobster) | `$HOME/projects/finance-news-openclaw-skill` |
+| `VFINANCE_NEWS_TARGET` | Delivery target (WhatsApp JID, group name, or Telegram chat ID) | *Required* |
+| `VFINANCE_NEWS_CHANNEL` | Delivery channel | `whatsapp` or `telegram` |
+| `SKILL_DIR` | Path to skill directory (for Lobster) | `$HOME/projects/vfinance-news-openclaw-skill` |
 
 ## Installation
 
@@ -39,11 +39,11 @@ finance-news briefing --morning --lang de --fast --deadline 300
 
 ```bash
 # Clone repository
-git clone https://github.com/kesslerio/finance-news-openclaw-skill.git \
-    ~/openclaw/skills/finance-news
+git clone https://github.com/kesslerio/vfinance-news-openclaw-skill.git \
+    ~/openclaw/skills/vfinance-news
 
 # Create virtual environment
-cd ~/openclaw/skills/finance-news
+cd ~/openclaw/skills/vfinance-news
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e .
@@ -62,7 +62,7 @@ Configuration is stored in `config/config.json`:
 Run the setup wizard for interactive configuration:
 
 ```bash
-finance-news setup
+vfinance-news setup
 ```
 
 ## Lobster Workflow
@@ -90,10 +90,10 @@ The skill includes a Lobster workflow (`workflows/briefing.yaml`) that:
 Manage your stock watchlist in `config/portfolio.csv`:
 
 ```bash
-finance-news portfolio-list              # View portfolio
-finance-news portfolio-add NVDA          # Add stock
-finance-news portfolio-remove TSLA       # Remove stock
-finance-news portfolio-import stocks.csv # Import from CSV
+vfinance-news portfolio-list              # View portfolio
+vfinance-news portfolio-add NVDA          # Add stock
+vfinance-news portfolio-remove TSLA       # Remove stock
+vfinance-news portfolio-import stocks.csv # Import from CSV
 ```
 
 Portfolio briefings show:
@@ -121,4 +121,4 @@ Apache 2.0 - See [LICENSE](LICENSE) file for details.
 
 # Credits
 
-Based on [finance-news-openclaw-skill](https://github.com/kesslerio/finance-news-openclaw-skill)
+Based on [vfinance-news-openclaw-skill](https://github.com/kesslerio/vfinance-news-openclaw-skill)

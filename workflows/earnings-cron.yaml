@@ -4,7 +4,7 @@
 # Schedule: 6:00 AM PT / 9:00 AM ET (30 min before market open)
 # Sends today's earnings calendar to WhatsApp/Telegram
 
-name: finance.earnings.cron
+name: vfinance.earnings.cron
 description: Send earnings alerts for today's reports
 
 args:
@@ -12,18 +12,18 @@ args:
     default: en
     description: "Language: en or de"
   channel:
-    default: "${FINANCE_NEWS_CHANNEL:-whatsapp}"
+    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
     description: "Delivery channel: whatsapp or telegram"
   target:
-    default: "${FINANCE_NEWS_TARGET}"
+    default: "${VFINANCE_NEWS_TARGET}"
     description: "Target: group name, JID, or chat ID"
 
 steps:
   # Check earnings calendar for today and this week
   - id: check_earnings
     command: |
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/finance-news}"
-      "$SKILL_DIR/.venv/bin/python" -m finance_news.earnings check --lang "${lang}"
+      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
+      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --lang "${lang}"
     description: Get today's earnings calendar
 
   # Send earnings alert if there's content

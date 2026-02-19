@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from finance_news.stocks import (
+from vfinance_news.stocks import (
     load_stocks,
     save_stocks,
     get_holdings,
@@ -43,7 +43,7 @@ def sample_stocks_data():
 @pytest.fixture
 def stocks_file(tmp_path, sample_stocks_data):
     """Create a temporary stocks file."""
-    stocks_path = tmp_path / "finance_news.stocks.json"
+    stocks_path = tmp_path / "vfinance_news.stocks.json"
     stocks_path.write_text(json.dumps(sample_stocks_data))
     return stocks_path
 
@@ -73,7 +73,7 @@ class TestSaveStocks:
 
     def test_save_updates_timestamp(self, tmp_path, sample_stocks_data):
         """Save should update the 'updated' field."""
-        stocks_path = tmp_path / "finance_news.stocks.json"
+        stocks_path = tmp_path / "vfinance_news.stocks.json"
         save_stocks(sample_stocks_data, stocks_path)
 
         saved = json.loads(stocks_path.read_text())
@@ -81,7 +81,7 @@ class TestSaveStocks:
 
     def test_save_preserves_data(self, tmp_path, sample_stocks_data):
         """Save should preserve all data."""
-        stocks_path = tmp_path / "finance_news.stocks.json"
+        stocks_path = tmp_path / "vfinance_news.stocks.json"
         save_stocks(sample_stocks_data, stocks_path)
 
         saved = json.loads(stocks_path.read_text())
@@ -156,7 +156,7 @@ class TestAddToWatchlist:
 
     def test_add_new_to_watchlist(self, stocks_file, monkeypatch):
         """Add new stock to watchlist."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = add_to_watchlist("AMD", target=150.0, notes="Watch for dip")
         assert result is True
@@ -167,7 +167,7 @@ class TestAddToWatchlist:
 
     def test_update_existing_watchlist(self, stocks_file, monkeypatch):
         """Update existing watchlist entry."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         # NVDA already in watchlist with target 800
         result = add_to_watchlist("NVDA", target=750.0, notes="Updated target")
@@ -180,7 +180,7 @@ class TestAddToWatchlist:
 
     def test_add_with_alerts(self, stocks_file, monkeypatch):
         """Add stock with alert definitions."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         alerts = ["below_target", "above_stop"]
         result = add_to_watchlist("GOOG", target=180.0, alerts=alerts)
@@ -196,7 +196,7 @@ class TestAddToHoldings:
 
     def test_add_new_holding(self, stocks_file, monkeypatch):
         """Add new stock to holdings."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = add_to_holdings("GOOG", name="Alphabet", category="Tech")
         assert result is True
@@ -207,7 +207,7 @@ class TestAddToHoldings:
 
     def test_update_existing_holding(self, stocks_file, monkeypatch):
         """Update existing holding."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = add_to_holdings("AAPL", name="Apple Inc.", category="Consumer", notes="Core holding")
         assert result is True
@@ -223,7 +223,7 @@ class TestMoveToHoldings:
 
     def test_move_from_watchlist(self, stocks_file, monkeypatch):
         """Move stock from watchlist to holdings."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         # NVDA is in watchlist, not holdings
         result = move_to_holdings("NVDA", name="NVIDIA Corp", category="Semis")
@@ -235,7 +235,7 @@ class TestMoveToHoldings:
 
     def test_move_nonexistent_returns_false(self, stocks_file, monkeypatch):
         """Moving non-existent ticker returns False."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = move_to_holdings("NONEXISTENT")
         assert result is False
@@ -246,7 +246,7 @@ class TestRemoveStock:
 
     def test_remove_from_holdings(self, stocks_file, monkeypatch):
         """Remove stock from holdings."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = remove_stock("AAPL", from_list="holdings")
         assert result is True
@@ -256,7 +256,7 @@ class TestRemoveStock:
 
     def test_remove_from_watchlist(self, stocks_file, monkeypatch):
         """Remove stock from watchlist."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = remove_stock("NVDA", from_list="watchlist")
         assert result is True
@@ -266,14 +266,14 @@ class TestRemoveStock:
 
     def test_remove_nonexistent_returns_false(self, stocks_file, monkeypatch):
         """Removing non-existent ticker returns False."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         result = remove_stock("NONEXISTENT", from_list="holdings")
         assert result is False
 
     def test_remove_auto_detects_list(self, stocks_file, monkeypatch):
         """Remove without specifying list auto-detects."""
-        monkeypatch.setattr("finance_news.stocks.STOCKS_FILE", stocks_file)
+        monkeypatch.setattr("vfinance_news.stocks.STOCKS_FILE", stocks_file)
 
         # AAPL is in holdings
         result = remove_stock("AAPL")

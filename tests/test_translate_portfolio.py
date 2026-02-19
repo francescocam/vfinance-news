@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from finance_news.translate_portfolio import has_pretranslated_portfolio
+from vfinance_news.translate_portfolio import has_pretranslated_portfolio
 
 
 def test_has_pretranslated_portfolio_true_when_title_de_present():
