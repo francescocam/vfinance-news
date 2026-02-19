@@ -18,13 +18,10 @@ import argparse
 import csv
 import json
 import os
-import shutil
-import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
 
 # Paths
 SCRIPT_DIR = Path(__file__).parent
@@ -50,17 +47,6 @@ def _get_portfolio_file() -> Path:
 PORTFOLIO_FILE = _get_portfolio_file()
 EARNINGS_CACHE = CACHE_DIR / "earnings_calendar.json"
 MANUAL_EARNINGS = CONFIG_DIR / "manual_earnings.json"  # For JP/other stocks not in Finnhub
-
-# OpenBB binary path
-OPENBB_BINARY = None
-try:
-    env_path = os.environ.get('OPENBB_QUOTE_BIN')
-    if env_path and os.path.isfile(env_path) and os.access(env_path, os.X_OK):
-        OPENBB_BINARY = env_path
-    else:
-        OPENBB_BINARY = shutil.which('openbb-quote')
-except Exception:
-    pass
 
 # API Keys
 def get_fmp_key() -> str:
@@ -529,72 +515,6 @@ def get_briefing_section() -> str:
         check_earnings(Args())
 
     return f.getvalue()
-
-
-def get_earnings_context(symbols: list[str]) -> list[dict]:
-    """
-    Get recent earnings data (beats/misses) for symbols using OpenBB.
-
-    Returns list of dicts with: symbol, eps_actual, eps_estimate, surprise, revenue_actual, revenue_estimate
-    """
-    if not OPENBB_BINARY:
-        return []
-
-    results = []
-    for symbol in symbols[:10]:  # Limit to 10 symbols
-        try:
-            result = subprocess.run(
-                [OPENBB_BINARY, symbol, '--earnings'],
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            if result.returncode == 0:
-                try:
-                    data = json.loads(result.stdout)
-                    if isinstance(data, list) and data:
-                        results.append({
-                            'symbol': symbol,
-                            'earnings': data[0] if isinstance(data[0], dict) else {}
-                        })
-                except json.JSONDecodeError:
-                    pass
-        except Exception:
-            pass
-    return results
-
-
-def get_analyst_ratings(symbols: list[str]) -> list[dict]:
-    """
-    Get analyst upgrades/downgrades for symbols using OpenBB.
-
-    Returns list of dicts with: symbol, rating, target_price, firm, direction
-    """
-    if not OPENBB_BINARY:
-        return []
-
-    results = []
-    for symbol in symbols[:10]:  # Limit to 10 symbols
-        try:
-            result = subprocess.run(
-                [OPENBB_BINARY, symbol, '--rating'],
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            if result.returncode == 0:
-                try:
-                    data = json.loads(result.stdout)
-                    if isinstance(data, list) and data:
-                        results.append({
-                            'symbol': symbol,
-                            'rating': data[0] if isinstance(data[0], dict) else {}
-                        })
-                except json.JSONDecodeError:
-                    pass
-        except Exception:
-            pass
-    return results
 
 
 def main():

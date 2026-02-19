@@ -2,7 +2,6 @@
 import sys
 from pathlib import Path
 
-import json
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 from vfinance_news.fetch_news import fetch_market_data, fetch_rss, _get_best_feed_url, get_large_portfolio_news
@@ -108,30 +107,22 @@ def test_clamp_timeout_deadline_exceeded(monkeypatch):
         clamp_timeout(30, deadline)
 
 
-def test_fetch_market_data_price_fallback(monkeypatch):
-    sample = {
-        "price": None,
-        "open": 100,
-        "prev_close": 105,
-        "change_percent": None,
+def test_fetch_market_data_empty_symbols_returns_empty():
+    assert fetch_market_data([]) == {}
+
+
+def test_fetch_market_data_uses_yfinance_only(monkeypatch):
+    expected = {
+        "AAPL": {"price": 123.45, "change_percent": 1.0, "prev_close": 122.0, "symbol": "AAPL"},
+        "MSFT": {"price": 321.0, "change_percent": -0.5, "prev_close": 322.6, "symbol": "MSFT"},
     }
+    monkeypatch.setattr(
+        "vfinance_news.fetch_news._fetch_via_yfinance",
+        lambda symbols, timeout, deadline: expected if symbols == ["AAPL", "MSFT"] and timeout == 42 and deadline == 99.0 else {},
+    )
 
-    def fake_run(*_args, **_kwargs):
-        class Result:
-            returncode = 0
-            stdout = json.dumps(sample)
-            stderr = ""
-
-        return Result()
-
-    monkeypatch.setattr("vfinance_news.fetch_news.OPENBB_BINARY", "/bin/openbb-quote")
-    monkeypatch.setattr("vfinance_news.fetch_news.subprocess.run", fake_run)
-
-    no_fallback = fetch_market_data(["^GSPC"], allow_price_fallback=False)
-    assert no_fallback["^GSPC"]["price"] is None
-
-    with_fallback = fetch_market_data(["^GSPC"], allow_price_fallback=True)
-    assert with_fallback["^GSPC"]["price"] == 100
+    result = fetch_market_data(["AAPL", "MSFT"], timeout=42, deadline=99.0, allow_price_fallback=True)
+    assert result == expected
 
 
 def test_get_large_portfolio_news_handles_none_change(monkeypatch):

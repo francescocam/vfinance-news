@@ -1,6 +1,6 @@
 ---
 name: vfinance-news
-description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports WhatsApp delivery and English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries (use openbb).
+description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports WhatsApp delivery and English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries.
 ---
 
 # Finance News Skill
@@ -197,12 +197,6 @@ Momentum. Fed-Kommentare könnten Volatilität auslösen.
 
 ## Integration
 
-### With OpenBB (existing skill)
-```bash
-# Get detailed quote, then news
-openbb-quote AAPL && vfinance-news news AAPL
-```
-
 ### With OpenClaw Agent
 The agent will automatically use this skill when asked about:
 - "What's the market doing?"
@@ -258,7 +252,6 @@ skills/vfinance-news/
 - Python 3.10+
 - `feedparser` (`pip install feedparser`)
 - Gemini CLI (`brew install gemini-cli`)
-- OpenBB (existing `openbb-quote` wrapper)
 - OpenClaw message tool (for WhatsApp delivery)
 
 ## Troubleshooting

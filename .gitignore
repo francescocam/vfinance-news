@@ -2,6 +2,7 @@
 cache/
 *.pyc
 __pycache__/
+.coverage
 
 # Environment
 .env

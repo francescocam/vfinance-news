@@ -49,6 +49,50 @@ source .venv/bin/activate
 pip install -e .
 ```
 
+## Development Setup
+
+Use this section when contributing code or running tests locally.
+
+Prerequisites:
+- Python 3.10+
+- `uv.lock` is included for reproducible locking, but the primary dev workflow here is `.venv` + `pip`.
+
+```bash
+# From repo root
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install project + dev dependencies
+pip install -e ".[dev]"
+
+# Fallback if extras are unavailable
+pip install -e .
+pip install -r requirements-test.txt
+```
+
+### Common Dev Commands
+
+```bash
+# Lint
+.venv/bin/ruff check .
+
+# Run all tests
+.venv/bin/python -m pytest
+
+# Run one test file
+.venv/bin/python -m pytest tests/test_portfolio.py
+
+# Run tests with coverage
+.venv/bin/python -m pytest --cov=vfinance_news --cov-report=term-missing --cov-report=html
+
+# CLI smoke check
+.venv/bin/vfinance-news --help
+```
+
+Troubleshooting:
+- If `pytest` or `ruff` is not found, activate `.venv` or run tools via `.venv/bin/...`.
+- If `vfinance-news` is missing, reinstall: `pip install -e ".[dev]"`.
+
 ## Configuration
 
 Configuration is stored in `config/config.json`:
@@ -106,10 +150,6 @@ Portfolio briefings show:
 - Python 3.10+
 - openclaw CLI (for message delivery and LLM)
 - Lobster (for workflow automation)
-
-### Optional
-
-- OpenBB (`openbb-quote`) for enhanced market data
 
 ## License
 

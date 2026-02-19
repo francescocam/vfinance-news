@@ -135,52 +135,6 @@ def ensure_portfolio_config():
 ensure_portfolio_config()
 
 
-def get_openbb_binary() -> str:
-    """
-    Find openbb-quote binary.
-    
-    Checks (in order):
-    1. OPENBB_QUOTE_BIN environment variable
-    2. PATH via shutil.which()
-    
-    Returns:
-        Path to openbb-quote binary
-        
-    Raises:
-        RuntimeError: If openbb-quote is not found
-    """
-    # Check env var override
-    env_path = os.environ.get('OPENBB_QUOTE_BIN')
-    if env_path:
-        if os.path.isfile(env_path) and os.access(env_path, os.X_OK):
-            return env_path
-        else:
-            print(f"⚠️ OPENBB_QUOTE_BIN={env_path} is not a valid executable", file=sys.stderr)
-    
-    # Check PATH
-    binary = shutil.which('openbb-quote')
-    if binary:
-        return binary
-    
-    # Not found - show helpful error
-    raise RuntimeError(
-        "openbb-quote not found!\n\n"
-        "Installation options:\n"
-        "1. Install via pip: pip install openbb\n"
-        "2. Use existing install: export OPENBB_QUOTE_BIN=/path/to/openbb-quote\n"
-        "3. Add to PATH: export PATH=$PATH:$HOME/.local/bin\n\n"
-        "See: https://github.com/kesslerio/vfinance-news-openclaw-skill#dependencies"
-    )
-
-
-# Cache the binary path on module load
-try:
-    OPENBB_BINARY = get_openbb_binary()
-except RuntimeError as e:
-    print(f"❌ {e}", file=sys.stderr)
-    OPENBB_BINARY = None
-
-
 def load_sources():
     """Load source configuration."""
     config_path = CONFIG_DIR / "config.json"
@@ -306,63 +260,6 @@ def fetch_rss(
     return items
 
 
-def _fetch_via_openbb(
-    openbb_bin: str,
-    symbol: str,
-    timeout: int,
-    deadline: float | None,
-    allow_price_fallback: bool,
-) -> dict | None:
-    """Fetch single symbol via openbb-quote subprocess."""
-    try:
-        effective_timeout = clamp_timeout(timeout, deadline)
-    except TimeoutError:
-        return None
-
-    try:
-        result = subprocess.run(
-            [openbb_bin, symbol],
-            capture_output=True,
-            text=True,
-            stdin=subprocess.DEVNULL,
-            timeout=effective_timeout,
-            check=False
-        )
-        if result.returncode != 0:
-            return None
-
-        data = json.loads(result.stdout)
-
-        # Normalize response structure
-        if isinstance(data, dict) and "results" in data and isinstance(data["results"], list):
-            data = data["results"][0] if data["results"] else {}
-        elif isinstance(data, list):
-            data = data[0] if data else {}
-
-        if not isinstance(data, dict):
-            return None
-
-        # Price fallback: use open or prev_close if price is None
-        if allow_price_fallback and data.get("price") is None:
-            if data.get("open") is not None:
-                data["price"] = data["open"]
-            elif data.get("prev_close") is not None:
-                data["price"] = data["prev_close"]
-
-        # Calculate change_percent if missing
-        if data.get("change_percent") is None and data.get("price") and data.get("prev_close"):
-            price = data["price"]
-            prev_close = data["prev_close"]
-            if prev_close != 0:
-                data["change_percent"] = ((price - prev_close) / prev_close) * 100
-
-        data["symbol"] = symbol
-        return data
-
-    except Exception:
-        return None
-
-
 def _fetch_via_yfinance(
     symbols: list[str],
     timeout: int,
@@ -445,45 +342,14 @@ def fetch_market_data(
     deadline: float | None = None,
     allow_price_fallback: bool = False,
 ) -> dict:
-    """Fetch market data using openbb-quote (primary) with yfinance fallback."""
-    from concurrent.futures import ThreadPoolExecutor, as_completed
+    """Fetch market data via yfinance.
 
-    results = {}
+    `allow_price_fallback` is retained for API compatibility and is ignored.
+    """
     if not symbols:
-        return results
+        return {}
 
-    failed_symbols = []
-
-    # 1. Try openbb-quote first (primary source)
-    if OPENBB_BINARY:
-        def fetch_one(sym):
-            return sym, _fetch_via_openbb(
-                OPENBB_BINARY, sym, timeout, deadline, allow_price_fallback
-            )
-
-        # Parallel fetch with ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=min(8, len(symbols))) as executor:
-            futures = {executor.submit(fetch_one, s): s for s in symbols}
-            for future in as_completed(futures):
-                try:
-                    sym, data = future.result()
-                    if data:
-                        results[sym] = data
-                    else:
-                        failed_symbols.append(sym)
-                except Exception:
-                    failed_symbols.append(futures[future])
-    else:
-        # No openbb available, all symbols go to yfinance fallback
-        print("⚠️ openbb-quote not found, using yfinance fallback", file=sys.stderr)
-        failed_symbols = list(symbols)
-
-    # 2. Fallback to yfinance for any symbols that failed
-    if failed_symbols:
-        yf_results = _fetch_via_yfinance(failed_symbols, timeout, deadline)
-        results.update(yf_results)
-
-    return results
+    return _fetch_via_yfinance(symbols, timeout, deadline)
 
 
 def fetch_ticker_news(symbol: str, limit: int = 5) -> list[dict]:
@@ -1018,7 +884,7 @@ def get_large_portfolio_news(
     # For large portfolios, start with yfinance batch for predictable runtime.
     quotes = _fetch_via_yfinance(symbols, timeout=effective_timeout, deadline=deadline)
 
-    # Fill missing symbols with openbb, but cap requests to avoid deadline overruns.
+    # Re-query a subset of missing symbols with shorter timeout to avoid deadline overruns.
     missing = [sym for sym in symbols if sym not in quotes]
     if missing and (time_left(deadline) is None or time_left(deadline) > 0):
         # Fetch enough symbols to recover top movers even when some quotes are missing.
