@@ -38,6 +38,7 @@ HEADLINE_SHORTLIST_SIZE = 20
 HEADLINE_MERGE_THRESHOLD = 0.82
 HEADLINE_MAX_AGE_HOURS = 72
 WATCHPOINTS_BIG_MOVE_THRESHOLD = 1.0  # Match get_portfolio_movers min_abs_change
+BRIEFING_CUTOFF_HOUR = 12
 
 STOPWORDS = {
     "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "is",
@@ -299,7 +300,13 @@ def load_translations(config: dict) -> dict:
             return json.load(f)
     return {}
 
-def write_debug_log(args, market_data: dict, portfolio_data: dict | None) -> None:
+def infer_briefing_time(now: datetime | None = None) -> str:
+    """Determine briefing bucket by hard local-time cutoff."""
+    current = now or datetime.now()
+    return "morning" if current.hour < BRIEFING_CUTOFF_HOUR else "evening"
+
+
+def write_debug_log(args, market_data: dict, portfolio_data: dict | None, briefing_time: str) -> None:
     """Write a debug log with the raw sources used in the briefing."""
     cache_dir = SCRIPT_DIR.parent / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -307,7 +314,7 @@ def write_debug_log(args, market_data: dict, portfolio_data: dict | None) -> Non
     stamp = now.strftime("%Y-%m-%d-%H%M%S")
     payload = {
         "timestamp": now.isoformat(),
-        "time": args.time,
+        "time": briefing_time,
         "style": args.style,
         "language": args.lang,
         "model": getattr(args, "model", None),
@@ -1655,6 +1662,7 @@ def generate_briefing(args):
     config = load_config()
     translations = load_translations(config)
     language = args.lang or config['language']['default']
+    briefing_time = infer_briefing_time()
     labels = translations.get(language, translations.get("en", {}))
     fast_mode = args.fast or os.environ.get("VFINANCE_NEWS_FAST") == "1"
     env_deadline = os.environ.get("VFINANCE_NEWS_DEADLINE_SEC")
@@ -1677,8 +1685,8 @@ def generate_briefing(args):
     
     # Get market overview
     headline_limit = 10 if fast_mode else 15
-    # Apply 24h recency filter for daily briefings
-    headline_max_age = 24.0 if args.time in ("morning", "evening") else None
+    # Apply 24h recency filter for daily briefings.
+    headline_max_age = 24.0 if briefing_time in ("morning", "evening") else None
     market_data = get_market_news(
         headline_limit,
         regions=["us", "europe", "japan"],
@@ -1770,7 +1778,7 @@ def generate_briefing(args):
         payload = dict(debug_payload)
         if extra:
             payload.update(extra)
-        write_debug_log(args, {**market_data, **payload}, portfolio_data)
+        write_debug_log(args, {**market_data, **payload}, portfolio_data, briefing_time)
         debug_written = True
 
     if not raw_content.strip():
@@ -1865,10 +1873,10 @@ def generate_briefing(args):
         for en, de in days.items():
             date_str = date_str.replace(en, de)
 
-    if args.time == "morning":
+    if briefing_time == "morning":
         emoji = "🌅"
         title = labels.get("title_morning", "Morning Briefing")
-    elif args.time == "evening":
+    elif briefing_time == "evening":
         emoji = "🌆"
         title = labels.get("title_evening", "Evening Briefing")
     else:
@@ -1939,8 +1947,6 @@ def main():
     parser.add_argument('--lang', choices=['de', 'en'], help='Output language')
     parser.add_argument('--style', choices=['briefing', 'analysis', 'headlines'],
                         default='briefing', help='Summary style')
-    parser.add_argument('--time', choices=['morning', 'evening'],
-                        default=None, help='Briefing type (default: auto)')
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('--research', action='store_true', help='Include deep research section (slower)')
     parser.add_argument('--llm', action='store_true', help='Use LLM for briefing (default: deterministic)')

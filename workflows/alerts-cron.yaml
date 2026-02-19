@@ -5,18 +5,12 @@
 # Checks price alerts against current prices (including after-hours)
 
 name: vfinance.alerts.cron
-description: Check price alerts and send triggered alerts to WhatsApp/Telegram
+description: Check price alerts and print triggered alerts
 
 args:
   lang:
     default: en
     description: "Language: en or de"
-  channel:
-    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
-    description: "Delivery channel: whatsapp or telegram"
-  target:
-    default: "${VFINANCE_NEWS_TARGET}"
-    description: "Target: group name, JID, or chat ID"
 
 steps:
   # Check alerts against current prices
@@ -26,20 +20,16 @@ steps:
       "$SKILL_DIR/.venv/bin/python" -m vfinance_news.alerts check --lang "${lang}"
     description: Check price alerts against current prices
 
-  # Send alert message if there's content
-  - id: send_alerts
+  # Print alert message summary if there's content
+  - id: summarize_alerts
     command: |
       MSG=$(cat)
       MSG=$(echo "$MSG" | tr -d '\r')
-      # Only send if message has actual content (not just "No price data" message)
+      # Only print if message has actual content (not just "No price data" message)
       if echo "$MSG" | grep -q "IN BUY ZONE\|IN KAUFZONE\|WATCHING\|BEOBACHTUNG"; then
-        openclaw message send \
-          --channel "${channel}" \
-          --target "${target}" \
-          --message "$MSG"
-        echo "Sent price alerts to ${channel}"
+        echo "$MSG"
       else
-        echo "No triggered alerts or watchlist items to send"
+        echo "No triggered alerts or watchlist items"
       fi
     stdin: $check_alerts.stdout
-    description: Send price alerts to channel
+    description: Print price alerts

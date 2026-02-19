@@ -2,21 +2,15 @@
 # Usage: lobster run --file workflows/earnings-weekly-cron.yaml --args-json '{"lang":"en"}'
 #
 # Schedule: Sunday 7:00 AM PT (before market week starts)
-# Sends upcoming week's earnings calendar to WhatsApp/Telegram
+# Prints upcoming week's earnings calendar summary
 
 name: vfinance.earnings.weekly.cron
-description: Send weekly earnings preview for portfolio stocks
+description: Check weekly earnings preview for portfolio stocks
 
 args:
   lang:
     default: en
     description: "Language: en or de"
-  channel:
-    default: "${VFINANCE_NEWS_CHANNEL:-whatsapp}"
-    description: "Delivery channel: whatsapp or telegram"
-  target:
-    default: "${VFINANCE_NEWS_TARGET}"
-    description: "Target: group name, JID, or chat ID"
 
 steps:
   # Check earnings calendar for upcoming week
@@ -26,20 +20,16 @@ steps:
       "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --week --lang "${lang}"
     description: Get upcoming week's earnings calendar
 
-  # Send earnings alert if there's content
-  - id: send_earnings
+  # Print earnings preview if there's content
+  - id: summarize_earnings
     command: |
       MSG=$(cat)
       MSG=$(echo "$MSG" | tr -d '\r')
-      # Only send if there are actual earnings next week
+      # Only print if there are actual earnings next week
       if echo "$MSG" | grep -qE "EARNINGS (NEXT WEEK|NÄCHSTE WOCHE)"; then
-        openclaw message send \
-          --channel "${channel}" \
-          --target "${target}" \
-          --message "$MSG"
-        echo "Sent weekly earnings preview to ${channel}"
+        echo "$MSG"
       else
-        echo "No earnings next week - skipping message"
+        echo "No earnings next week"
       fi
     stdin: $check_earnings.stdout
-    description: Send weekly earnings alert to channel
+    description: Print weekly earnings alert

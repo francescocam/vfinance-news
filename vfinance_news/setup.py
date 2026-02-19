@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
 Finance News Skill - Interactive Setup
-Configures RSS feeds, WhatsApp channels, and cron jobs.
+Configures RSS feeds, language, markets, and cron jobs.
 """
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -92,38 +91,6 @@ def setup_markets(sources: dict):
         sources['markets'][market_id]['enabled'] = enabled
 
 
-def setup_delivery(sources: dict):
-    """Interactive delivery channel configuration."""
-    print("\n📤 Delivery Channels\n")
-    
-    # Ensure delivery dict exists
-    if 'delivery' not in sources:
-        sources['delivery'] = {
-            'whatsapp': {'enabled': True, 'group': ''},
-            'telegram': {'enabled': False, 'group': ''}
-        }
-
-    # WhatsApp
-    wa_enabled = prompt_bool("Enable WhatsApp delivery",
-                              sources.get('delivery', {}).get('whatsapp', {}).get('enabled', True))
-    sources['delivery']['whatsapp']['enabled'] = wa_enabled
-
-    if wa_enabled:
-        wa_group = prompt("  WhatsApp group name or JID",
-                          sources['delivery']['whatsapp'].get('group', ''))
-        sources['delivery']['whatsapp']['group'] = wa_group
-    
-    # Telegram
-    tg_enabled = prompt_bool("Enable Telegram delivery",
-                              sources['delivery']['telegram'].get('enabled', False))
-    sources['delivery']['telegram']['enabled'] = tg_enabled
-    
-    if tg_enabled:
-        tg_group = prompt("  Telegram group name or ID",
-                          sources['delivery']['telegram'].get('group', ''))
-        sources['delivery']['telegram']['group'] = tg_group
-
-
 def setup_language(sources: dict):
     """Interactive language configuration."""
     print("\n🌐 Language Settings\n")
@@ -171,18 +138,6 @@ def setup_cron_jobs(sources: dict):
     print("\n📅 Setting up cron jobs...\n")
     
     schedule = sources.get('schedule', {})
-    delivery = sources.get('delivery', {})
-    language = sources.get('language', {}).get('default', 'de')
-    
-    # Determine delivery target
-    if delivery.get('whatsapp', {}).get('enabled'):
-        group = delivery['whatsapp'].get('group', '')
-        send_cmd = f"--send --group '{group}'" if group else ""
-    elif delivery.get('telegram', {}).get('enabled'):
-        group = delivery['telegram'].get('group', '')
-        send_cmd = f"--send --group '{group}'"  # Would need telegram support
-    else:
-        send_cmd = ""
     
     # Morning job
     if schedule.get('morning', {}).get('enabled'):
@@ -226,9 +181,6 @@ def run_setup(args):
     if not args.section or args.section == 'markets':
         setup_markets(sources)
     
-    if not args.section or args.section == 'delivery':
-        setup_delivery(sources)
-    
     if not args.section or args.section == 'language':
         setup_language(sources)
     
@@ -249,7 +201,7 @@ def run_setup(args):
     print("\n✅ Setup complete!")
     print("\nNext steps:")
     print("  • Run 'vfinance-news portfolio list' to check your watchlist")
-    print("  • Run 'vfinance-news briefing --morning' to test a briefing")
+    print("  • Run 'vfinance-news briefing' to test a briefing")
     print("  • Run 'vfinance-news market' to see market overview")
     print()
 
@@ -267,7 +219,7 @@ def main():
     # Setup command (default)
     setup_parser = subparsers.add_parser('wizard', help='Run setup wizard')
     setup_parser.add_argument('--reset', action='store_true', help='Reset to defaults')
-    setup_parser.add_argument('--section', choices=['feeds', 'markets', 'delivery', 'language', 'schedule'],
+    setup_parser.add_argument('--section', choices=['feeds', 'markets', 'language', 'schedule'],
                               help='Configure specific section only')
     setup_parser.set_defaults(func=run_setup)
     

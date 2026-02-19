@@ -367,7 +367,6 @@ def test_generate_briefing_auto_time_evening(capsys, monkeypatch):
         {
             "lang": "de",
             "style": "briefing",
-            "time": None,
             "json": False,
             "research": False,
             "deadline": None,
@@ -415,7 +414,6 @@ def test_generate_briefing_llm_uses_openclaw(capsys, monkeypatch):
         {
             "lang": "en",
             "style": "briefing",
-            "time": "morning",
             "json": True,
             "research": False,
             "deadline": None,

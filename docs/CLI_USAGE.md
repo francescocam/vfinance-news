@@ -57,23 +57,21 @@ vfinance-news portfolio add NVDA --name "NVIDIA Corporation" --type Holding
 
 ## `briefing`
 
-Generate morning/evening briefing, optionally with LLM summary and delivery.
+Generate market briefing, optionally with LLM summary.
 
 ```text
-vfinance-news briefing [--morning] [--evening] [briefing options...]
+vfinance-news briefing [briefing options...]
 ```
 
-`--morning` and `--evening` are convenience aliases that forward to `--time morning|evening`.
+Briefing period is selected automatically using a hard local-time cutoff:
+morning before 12:00, evening from 12:00 onward.
 
 Forwarded options (implemented in `vfinance_news/briefing.py`):
 
 | Option | Description |
 |---|---|
-| `--time {morning,evening}` | Briefing type |
 | `--style {briefing,analysis,headlines}` | Summary style |
 | `--lang {en,de}` | Output language |
-| `--send` | Send message via configured channel |
-| `--group <name-or-jid>` | Delivery target (defaults to `VFINANCE_NEWS_TARGET`) |
 | `--json` | Output JSON |
 | `--deadline <seconds>` | Global timeout/deadline |
 | `--llm` | Enable LLM-generated summary |
@@ -85,9 +83,8 @@ Model/provider selection for summary generation is handled by OpenClaw gateway c
 Examples:
 
 ```bash
-vfinance-news briefing --morning --lang de
-vfinance-news briefing --time evening --style analysis --llm
-vfinance-news briefing --morning --send --group "My Telegram Group"
+vfinance-news briefing --lang de
+vfinance-news briefing --style analysis --llm
 ```
 
 ## `market`
@@ -300,7 +297,7 @@ vfinance-news setup
 Underlying setup module supports:
 
 ```text
-wizard [--reset] [--section {feeds,markets,delivery,language,schedule}]
+wizard [--reset] [--section {feeds,markets,language,schedule}]
 ```
 
 ### `config`
@@ -321,15 +318,13 @@ show
 
 | Variable | Description |
 |---|---|
-| `VFINANCE_NEWS_TARGET` | Default delivery target used by briefing/send workflows |
-| `VFINANCE_NEWS_CHANNEL` | Delivery channel hint (`whatsapp` or `telegram`) |
 | `PORTFOLIOS_DIR` | Optional shared portfolio location; uses `$PORTFOLIOS_DIR/watchlists/portfolio.csv` |
 
 ## Data Files
 
 | File | Purpose |
 |---|---|
-| `config/config.json` | Main source/market/delivery configuration |
+| `config/config.json` | Main source/market/language configuration |
 | `config/portfolio.csv` | Portfolio/watchlist records |
 | `config/alerts.json` | Stored alert definitions |
 | `cache/earnings_cache.json` | Earnings cache data |
@@ -342,5 +337,3 @@ show
 2. Commands seem missing after code changes:
    - Confirm active virtual environment: `which vfinance-news`
    - Reinstall inside active env: `pip install -e .`
-3. Delivery fails for `briefing --send`:
-   - Check `VFINANCE_NEWS_TARGET` or pass `--group`.

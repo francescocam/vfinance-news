@@ -1,0 +1,157 @@
+{
+  "fetched_at": "2026-02-19T14:35:34.628531",
+  "stocks": {
+    "CSU.TO": {
+      "quote": {
+        "price": 2376.97998046875,
+        "change_percent": 5.260876122560072,
+        "prev_close": 2258.179931640625,
+        "symbol": "CSU.TO"
+      },
+      "articles": [
+        {
+          "title": "Lumine Deal Adds Telecom Cloud Exposure For Constellation Software Investors",
+          "link": "https://finance.yahoo.com/news/lumine-deal-adds-telecom-cloud-021023464.html?.tsrc=rss",
+          "date": "Wed, 18 Feb 2026 02:10:23 +0000",
+          "published_at": 1771380623.0,
+          "description": "Lumine Group, a Constellation Software (TSX:CSU) business, has completed the acquisition of Synchronoss Technologies, a provider of personal cloud and SaaS solutions for global telecom operators. The"
+        },
+        {
+          "title": "Constellation Software Inc. Announces Conference Call to Discuss Fourth Quarter Results",
+          "link": "https://finance.yahoo.com/news/constellation-software-inc-announces-conference-225100333.html?.tsrc=rss",
+          "date": "Tue, 17 Feb 2026 22:51:00 +0000",
+          "published_at": 1771368660.0,
+          "description": "TORONTO, Feb. 17, 2026 (GLOBE NEWSWIRE) -- Constellation Software Inc. (TSX:CSU) announced today it will host a fourth quarter conference call and live audio webcast on March 10, 2026 at 8:00 a.m. ET."
+        },
+        {
+          "title": "Lumine Group completes acquisition of Synchronoss Technologies",
+          "link": "https://finance.yahoo.com/news/lumine-group-completes-acquisition-synchronoss-140537114.html?.tsrc=rss",
+          "date": "Sat, 14 Feb 2026 14:05:37 +0000",
+          "published_at": 1771077937.0,
+          "description": "Constellation Software (CNSWF) announced that Lumine Group (LMGIF), through one of its wholly-owned subsidiaries, has completed the purchase of Synchronoss Technologies (SNCR). Synchronoss has served"
+        }
+      ],
+      "info": {
+        "symbol": "CSU.TO",
+        "name": "CSU.TO",
+        "category": "",
+        "notes": "",
+        "type": "Watchlist"
+      }
+    },
+    "TOST": {
+      "quote": {
+        "price": 27.670000076293945,
+        "change_percent": 0.03615411763196943,
+        "prev_close": 27.65999984741211,
+        "symbol": "TOST"
+      },
+      "articles": [
+        {
+          "title": "The 5 Most Interesting Analyst Questions From Toast\u2019s Q4 Earnings Call",
+          "link": "https://finance.yahoo.com/news/5-most-interesting-analyst-questions-053556632.html?.tsrc=rss",
+          "date": "Thu, 19 Feb 2026 05:35:56 +0000",
+          "published_at": 1771479356.0,
+          "description": "Toast\u2019s fourth quarter results were shaped by continued expansion in its core restaurant technology platform and increased adoption of new AI-driven features. Management cited strong customer wins\u2014inc"
+        },
+        {
+          "title": "Toast Announces Participation at Morgan Stanley Technology, Media, and Telecom Conference",
+          "link": "https://finance.yahoo.com/news/toast-announces-participation-morgan-stanley-210500320.html?.tsrc=rss",
+          "date": "Tue, 17 Feb 2026 21:05:00 +0000",
+          "published_at": 1771362300.0,
+          "description": "BOSTON, February 17, 2026--Toast Announces Participation at Morgan Stanley Technology, Media, and Telecom Conference"
+        },
+        {
+          "title": "Toast Shares Rebound on Solid Growth Outlook. Can the Stock's Momentum Continue?",
+          "link": "https://www.fool.com/investing/2026/02/17/toast-shares-rebound-solid-growth-outlook-tost/?.tsrc=rss",
+          "date": "Tue, 17 Feb 2026 09:09:00 +0000",
+          "published_at": 1771319340.0,
+          "description": "Toast looks well-positioned to continue its strong growth."
+        }
+      ],
+      "info": {
+        "symbol": "TOST",
+        "name": "TOST",
+        "category": "",
+        "notes": "",
+        "type": "Watchlist"
+      }
+    },
+    "BRK-B": {
+      "quote": {
+        "price": 499.07000732421875,
+        "change_percent": -0.8621196055538948,
+        "prev_close": 503.4100036621094,
+        "symbol": "BRK-B"
+      },
+      "articles": [
+        {
+          "title": "Amazon, Bank of America, and Apple Stocks Shrug Off Berkshire Sales. Why They\u2019re Rising.",
+          "link": "https://finance.yahoo.com/m/59fd9a79-d23a-3272-8b10-db471bbe851c/amazon%2C-bank-of-america%2C-and.html?.tsrc=rss",
+          "date": "Wed, 18 Feb 2026 19:23:00 +0000",
+          "published_at": 1771442580.0,
+          "description": "The 13-F filing is of interest to the market because it covered the final quarter during which Warren Buffett was Berkshire\u2019s CEO."
+        },
+        {
+          "title": "Fed minutes, Warren Buffett's Amazon stake, oil prices rise",
+          "link": "https://finance.yahoo.com/video/fed-minutes-warren-buffetts-amazon-181346949.html?.tsrc=rss",
+          "date": "Wed, 18 Feb 2026 18:13:46 +0000",
+          "published_at": 1771438426.0,
+          "description": "Yahoo Finance Senior Producer John Hyland tracks Wednesday's top moving stocks and biggest market stories in this Market Minute. Oil (CL=F, BZ=F) prices are jumping as tensions continue brewing betwee"
+        },
+        {
+          "title": "What Should You Do With Berkshire Stock Ahead of Q4 Earnings?",
+          "link": "https://finance.yahoo.com/news/berkshire-stock-ahead-q4-earnings-170300645.html?.tsrc=rss",
+          "date": "Wed, 18 Feb 2026 17:03:00 +0000",
+          "published_at": 1771434180.0,
+          "description": "BRK.B heads into Q4 earnings with expectations of revenue growth. But profits are likely to fall nearly 23%-and the Zacks model offers little hope for a beat."
+        }
+      ],
+      "info": {
+        "symbol": "BRK-B",
+        "name": "BRK-B",
+        "category": "",
+        "notes": "",
+        "type": "Watchlist"
+      }
+    },
+    "PYPL": {
+      "quote": {
+        "price": 41.45000076293945,
+        "change_percent": 1.568241529311241,
+        "prev_close": 40.810001373291016,
+        "symbol": "PYPL"
+      },
+      "articles": [
+        {
+          "title": "How The Narrative Around PayPal Holdings PYPL Is Shifting With Cautious Targets And New AI Deals",
+          "link": "https://finance.yahoo.com/news/narrative-around-paypal-holdings-pypl-130918444.html?.tsrc=rss",
+          "date": "Thu, 19 Feb 2026 13:09:18 +0000",
+          "published_at": 1771506558.0,
+          "description": "What Changed in the New Fair Value for PayPal? The latest update to the PayPal Holdings narrative centers on a reset in the modeled fair value from US$73.33 to US$51.88, a roughly 29% reduction that r"
+        },
+        {
+          "title": "PayPal Resets With AI Travel Push New Checkout And Incoming CEO",
+          "link": "https://finance.yahoo.com/news/paypal-resets-ai-travel-push-121246681.html?.tsrc=rss",
+          "date": "Thu, 19 Feb 2026 12:12:46 +0000",
+          "published_at": 1771503166.0,
+          "description": "PayPal Holdings (NasdaqGS:PYPL) has announced new partnerships with Sabre and Mindtrip to build an AI driven travel booking experience. The company is also working with The OLB Group on a new global c"
+        },
+        {
+          "title": "Bear Market Sell-Off: Is PayPal Stock a Buy After Its 20% Plunge?",
+          "link": "https://www.fool.com/investing/2026/02/19/bear-market-sell-off-is-paypal-stock-a-buy-after-i/?.tsrc=rss",
+          "date": "Thu, 19 Feb 2026 10:20:00 +0000",
+          "published_at": 1771496400.0,
+          "description": "Investors in this digital payments enterprise have been waiting years for things to turn around."
+        }
+      ],
+      "info": {
+        "symbol": "PYPL",
+        "name": "PYPL",
+        "category": "",
+        "notes": "",
+        "type": "Watchlist"
+      }
+    }
+  }
+}

@@ -136,16 +136,6 @@
     "default": "en",
     "supported": ["en", "de"]
   },
-  "delivery": {
-    "whatsapp": {
-      "enabled": true,
-      "group": ""
-    },
-    "telegram": {
-      "enabled": false,
-      "group": ""
-    }
-  },
   "schedule": {
     "morning": {
       "enabled": true,

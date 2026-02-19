@@ -6,7 +6,7 @@ This directory contains [Lobster](https://github.com/openclaw/lobster) workflow 
 
 ### `briefing.yaml` - Market Briefing with Approval
 
-Generates a market briefing and sends to WhatsApp with an approval gate.
+Generates a market briefing with an approval gate.
 
 **Usage:**
 ```bash
@@ -14,48 +14,28 @@ Generates a market briefing and sends to WhatsApp with an approval gate.
 lobster "workflows.run --file ~/projects/vfinance-news-openclaw-skill/workflows/briefing.yaml"
 
 # With custom args
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"time\":\"evening\",\"lang\":\"en\"}'"
+lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"lang\":\"en\"}'"
 ```
 
 **Arguments:**
 | Arg | Default | Description |
 |-----|---------|-------------|
-| `time` | `morning` | Briefing type: `morning` or `evening` |
 | `lang` | `de` | Language: `en` or `de` |
-| `channel` | `whatsapp` | Delivery channel: `whatsapp` or `telegram` |
-| `target` | env var | Group name, JID, phone number, or Telegram chat ID |
 | `fast` | `false` | Use fast mode (shorter timeouts) |
-
-**Environment Variables:**
-| Variable | Description |
-|----------|-------------|
-| `VFINANCE_NEWS_CHANNEL` | Default channel: `whatsapp` or `telegram` |
-| `VFINANCE_NEWS_TARGET` | Default target (group name, phone, chat ID) |
 
 **Examples:**
 ```bash
-# WhatsApp group (default)
 lobster "workflows.run --file workflows/briefing.yaml"
-
-# Telegram group
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"channel\":\"telegram\",\"target\":\"-1001234567890\"}'"
-
-# WhatsApp DM to phone number
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"target\":\"+15551234567\"}'"
-
-# Telegram DM to user
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"channel\":\"telegram\",\"target\":\"@username\"}'"
 ```
 
 **Flow:**
 1. **Generate** - Runs local `.venv` CLI to produce briefing JSON
-2. **Approve** - Halts for human review (shows briefing preview)
-3. **Send** - Delivers to channel (WhatsApp/Telegram) after approval
+2. **Validate** - Enforces deterministic structured output
+3. **Approve** - Halts for human review (shows briefing preview)
 
 **Requirements:**
 - Repo-local `.venv` with package installed (`pip install -e .`)
 - `jq` for JSON parsing
-- `openclaw` CLI for message delivery
 
 ## Adding to Lobster Registry
 
@@ -67,22 +47,18 @@ export const workflowRegistry = {
   // ... existing workflows
   'vfinance.briefing': {
     name: 'vfinance.briefing',
-    description: 'Generate market briefing with approval gate for WhatsApp/Telegram',
+    description: 'Generate market briefing with approval gate',
     argsSchema: {
       type: 'object',
       properties: {
-        time: { type: 'string', enum: ['morning', 'evening'], default: 'morning' },
         lang: { type: 'string', enum: ['en', 'de'], default: 'de' },
-        channel: { type: 'string', enum: ['whatsapp', 'telegram'], default: 'whatsapp' },
-        target: { type: 'string', description: 'Group name, JID, phone, or chat ID' },
         fast: { type: 'boolean', default: false },
       },
     },
     examples: [
-      { args: { time: 'morning', lang: 'de' }, description: 'German morning briefing to WhatsApp' },
-      { args: { channel: 'telegram', target: '-1001234567890' }, description: 'Send to Telegram group' },
+      { args: { lang: 'de' }, description: 'German briefing' },
     ],
-    sideEffects: ['message.send'],
+    sideEffects: [],
   },
 };
 ```
@@ -91,7 +67,7 @@ export const workflowRegistry = {
 
 Using Lobster instead of direct cron execution provides:
 
-- **Approval gates** - Review briefing before it's sent
+- **Approval gates** - Review briefing before completion
 - **Resumability** - If interrupted, continue from last step
 - **Token efficiency** - One workflow call vs. multiple LLM tool calls
 - **Determinism** - Same inputs = same outputs

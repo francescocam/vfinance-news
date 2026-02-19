@@ -1,15 +1,15 @@
 ---
 name: vfinance-news
-description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports WhatsApp delivery and English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries.
+description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries.
 ---
 
 # Finance News Skill
 
-AI-powered market news briefings with configurable language output and automated delivery.
+AI-powered market news briefings with configurable language output.
 
 ## First-Time Setup
 
-Run the interactive setup wizard to configure your sources, delivery channels, and schedule:
+Run the interactive setup wizard to configure your sources and schedule:
 
 ```bash
 vfinance-news setup
@@ -18,14 +18,12 @@ vfinance-news setup
 The wizard will guide you through:
 - 📰 **RSS Feeds:** Enable/disable WSJ, Barron's, CNBC, Yahoo, etc.
 - 📊 **Markets:** Choose regions (US, Europe, Japan, Asia)
-- 📤 **Delivery:** Configure WhatsApp/Telegram group
 - 🌐 **Language:** Set default language (English/German)
 - ⏰ **Schedule:** Configure morning/evening cron times
 
 You can also configure specific sections:
 ```bash
 vfinance-news setup --section feeds     # Just RSS feeds
-vfinance-news setup --section delivery  # Just delivery channels
 vfinance-news setup --section schedule  # Just cron schedule
 vfinance-news setup --reset             # Reset to defaults
 vfinance-news config                    # Show current config
@@ -34,8 +32,8 @@ vfinance-news config                    # Show current config
 ## Quick Start
 
 ```bash
-# Generate morning briefing
-vfinance-news briefing --morning
+# Generate briefing
+vfinance-news briefing
 
 # View market overview
 vfinance-news market
@@ -67,21 +65,17 @@ vfinance-news news AAPL
 ### 📅 Automated Briefings
 - **Morning:** 6:30 AM PT (US market open)
 - **Evening:** 1:00 PM PT (US market close)
-- **Delivery:** WhatsApp (configure group in cron scripts)
 
 ## Commands
 
 ### Briefing Generation
 
 ```bash
-# Morning briefing (English is default)
-vfinance-news briefing --morning
-
-# Evening briefing with WhatsApp delivery
-vfinance-news briefing --evening --send --group "Market Briefing"
+# Briefing (English is default)
+vfinance-news briefing
 
 # German language option
-vfinance-news briefing --morning --lang de
+vfinance-news briefing --lang de
 
 # Analysis style (more detailed)
 vfinance-news briefing --style analysis
@@ -209,11 +203,11 @@ The agent will automatically use this skill when asked about:
 Run briefings via [Lobster](https://github.com/openclaw/lobster) for approval gates and resumability:
 
 ```bash
-# Run with approval before WhatsApp send
+# Run with approval
 lobster "workflows.run --file workflows/briefing.yaml"
 
 # With custom args
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"time\":\"evening\",\"lang\":\"en\"}'"
+lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"lang\":\"en\"}'"
 ```
 
 See `workflows/README.md` for full documentation.
@@ -252,7 +246,6 @@ skills/vfinance-news/
 - Python 3.10+
 - `feedparser` (`pip install feedparser`)
 - Gemini CLI (`brew install gemini-cli`)
-- OpenClaw message tool (for WhatsApp delivery)
 
 ## Troubleshooting
 
@@ -266,7 +259,3 @@ gemini  # Follow login flow
 - Check network connectivity
 - WSJ/Barron's may require subscription cookies for some content
 - Free feeds (CNBC, Yahoo) should always work
-
-### WhatsApp delivery failing
-- Verify WhatsApp group exists and bot has access
-- Check `openclaw doctor` for WhatsApp status

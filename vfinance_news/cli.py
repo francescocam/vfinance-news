@@ -21,9 +21,7 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("setup", help="Interactive setup wizard")
     subparsers.add_parser("config", help="Show current configuration")
 
-    briefing_parser = subparsers.add_parser("briefing", help="Generate market briefing")
-    briefing_parser.add_argument("--morning", action="store_true", help="Shortcut for --time morning")
-    briefing_parser.add_argument("--evening", action="store_true", help="Shortcut for --time evening")
+    subparsers.add_parser("briefing", help="Generate market briefing")
 
     subparsers.add_parser("market", help="Market overview")
     subparsers.add_parser("portfolio", help="News for portfolio stocks")
@@ -65,12 +63,7 @@ def main() -> None:
     if args.command == "briefing":
         from vfinance_news import briefing
 
-        forwarded = list(remaining)
-        if args.morning and "--time" not in forwarded:
-            forwarded = ["--time", "morning"] + forwarded
-        if args.evening and "--time" not in forwarded:
-            forwarded = ["--time", "evening"] + forwarded
-        sys.argv = ["vfinance-news briefing"] + forwarded
+        sys.argv = ["vfinance-news briefing"] + list(remaining)
         briefing.main()
         return
 

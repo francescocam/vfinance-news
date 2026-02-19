@@ -1,6 +1,6 @@
 # Value Investor Tailored Finance News Skill for OpenClaw
 
-AI-powered market news briefings tailored to value investors with configurable language output and automated delivery.
+AI-powered market news briefings tailored to value investors with configurable language output.
 
 ## Features
 
@@ -8,7 +8,6 @@ AI-powered market news briefings tailored to value investors with configurable l
 - **Global markets:** US (S&P, Dow, NASDAQ), Europe (DAX, STOXX, FTSE), Japan (Nikkei)
 - **AI summaries:** LLM-powered analysis in German or English
 - **Automated briefings:** Morning (market open) and evening (market close)
-- **Telegram delivery:** Send briefings via openclaw
 - **Portfolio tracking:** Personalized news for your stocks with price alerts
 - **Customizable:** Configure sources, markets
 
@@ -19,10 +18,10 @@ AI-powered market news briefings tailored to value investors with configurable l
 
 ```bash
 # Generate a briefing
-vfinance-news briefing --morning --lang de
+vfinance-news briefing --lang de
 
 # Use fast mode + deadline (recommended)
-vfinance-news briefing --morning --lang de --fast --deadline 300
+vfinance-news briefing --lang de --fast --deadline 300
 ```
 
 Full command reference: `docs/CLI_USAGE.md`
@@ -31,8 +30,6 @@ Full command reference: `docs/CLI_USAGE.md`
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `VFINANCE_NEWS_TARGET` | Delivery target (WhatsApp JID, group name, or Telegram chat ID) | *Required* |
-| `VFINANCE_NEWS_CHANNEL` | Delivery channel | `whatsapp` or `telegram` |
 | `SKILL_DIR` | Path to skill directory (for Lobster) | `$HOME/projects/vfinance-news-openclaw-skill` |
 
 ## Installation
@@ -101,7 +98,6 @@ Configuration is stored in `config/config.json`:
 
 - **RSS Feeds:** Enable/disable news sources per region
 - **Markets:** Choose which indices to track
-- **Delivery:** WhatsApp/Telegram settings
 - **Language:** German (`de`) or English (`en`) output
 - **Schedule:** Cron times for morning/evening briefings
 
@@ -117,18 +113,14 @@ The skill includes a Lobster workflow (`workflows/briefing.yaml`) that:
 
 1. **Generates** briefing via local `.venv` CLI
 2. **Translates** portfolio headlines (German only, via openclaw)
-3. **Halts** for approval (shows preview)
-4. **Sends** macro briefing to channel
-5. **Sends** portfolio briefing to channel
+3. **Validates** deterministic structure
+4. **Halts** for approval (shows preview)
 
 ### Workflow Arguments
 
 | Arg | Default | Description |
 |-----|---------|-------------|
-| `time` | `morning` | Briefing type: `morning` or `evening` |
 | `lang` | `de` | Language: `en` or `de` |
-| `channel` | env var | `whatsapp` or `telegram` |
-| `target` | env var | Group JID/name or chat ID |
 | `fast` | `false` | Use fast mode (shorter timeouts) |
 
 ## Portfolio
@@ -150,7 +142,7 @@ Portfolio briefings show:
 ## Dependencies
 
 - Python 3.10+
-- openclaw CLI (for message delivery and LLM)
+- openclaw CLI (for LLM access)
 - Lobster (for workflow automation)
 
 ## License

@@ -22,8 +22,7 @@ def test_vfinance_news_briefing_help(monkeypatch, capsys):
     with pytest.raises(SystemExit):
         cli.main()
     out = capsys.readouterr().out
-    assert "--morning" in out
-    assert "--evening" in out
+    assert "usage: vfinance-news briefing" in out
 
 
 def test_vfinance_news_setup_help(monkeypatch, capsys):
@@ -32,6 +31,7 @@ def test_vfinance_news_setup_help(monkeypatch, capsys):
         cli.main()
     out = capsys.readouterr().out
     assert "usage:" in out
+    assert "delivery" not in out
 
 
 def test_vfinance_news_portfolio_add_routes_to_portfolio_manager(monkeypatch):

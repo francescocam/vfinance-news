@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
 Briefing Generator - Main entry point for market briefings.
-Generates and optionally sends to WhatsApp group.
+Generates market briefings for terminal/JSON output.
 """
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime
@@ -16,53 +15,16 @@ from vfinance_news.utils import ensure_venv
 ensure_venv()
 
 
-def send_to_whatsapp(message: str, group_name: str | None = None):
-    """Send message to WhatsApp group via openclaw message tool."""
-    if not group_name:
-        group_name = os.environ.get('VFINANCE_NEWS_TARGET', '')
-    if not group_name:
-        print("❌ No target specified. Set VFINANCE_NEWS_TARGET env var or use --group", file=sys.stderr)
-        return False
-    # Use openclaw message tool
-    try:
-        result = subprocess.run(
-            [
-                'openclaw', 'message', 'send',
-                '--channel', 'whatsapp',
-                '--target', group_name,
-                '--message', message
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
-        
-        if result.returncode == 0:
-            print(f"✅ Sent to WhatsApp group: {group_name}", file=sys.stderr)
-            return True
-        else:
-            print(f"⚠️ WhatsApp send failed: {result.stderr}", file=sys.stderr)
-            return False
-    
-    except Exception as e:
-        print(f"❌ WhatsApp error: {e}", file=sys.stderr)
-        return False
-
-
 def generate_and_send(args):
-    """Generate briefing and optionally send to WhatsApp."""
-    
-    # Determine briefing type based on current time or args
-    if args.time:
-        briefing_time = args.time
-    else:
-        hour = datetime.now().hour
-        briefing_time = 'morning' if hour < 12 else 'evening'
+    """Generate briefing output."""
+
+    # Hard cutoff: morning before 12:00 local time, evening from 12:00 onward.
+    hour = datetime.now().hour
+    briefing_time = 'morning' if hour < 12 else 'evening'
     
     # Generate the briefing
     cmd = [
         sys.executable, '-m', 'vfinance_news.summarize',
-        '--time', briefing_time,
         '--style', args.style,
         '--lang', args.lang
     ]
@@ -119,33 +81,15 @@ def generate_and_send(args):
              print("\n" + "="*20 + "\n")
              print(data['portfolio_message'])
     
-    # Send to WhatsApp if requested
-    if args.send and args.group:
-        # Message 1: Macro
-        macro_msg = data.get('macro_message') or data.get('summary', '')
-        if macro_msg:
-            send_to_whatsapp(macro_msg, args.group)
-        
-        # Message 2: Portfolio (if exists)
-        portfolio_msg = data.get('portfolio_message')
-        if portfolio_msg:
-            send_to_whatsapp(portfolio_msg, args.group)
-            
     return data.get('macro_message', '')
 
 
 def main():
     parser = argparse.ArgumentParser(description='Briefing Generator')
-    parser.add_argument('--time', choices=['morning', 'evening'], 
-                        help='Briefing type (auto-detected if not specified)')
     parser.add_argument('--style', choices=['briefing', 'analysis', 'headlines'],
                         default='briefing', help='Summary style')
     parser.add_argument('--lang', choices=['en', 'de'], default='en',
                         help='Output language')
-    parser.add_argument('--send', action='store_true',
-                        help='Send to WhatsApp group')
-    parser.add_argument('--group', default=os.environ.get('VFINANCE_NEWS_TARGET', ''),
-                        help='WhatsApp group name or JID (default: VFINANCE_NEWS_TARGET env var)')
     parser.add_argument('--json', action='store_true',
                         help='Output as JSON')
     parser.add_argument('--deadline', type=int, default=None,
