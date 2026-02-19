@@ -3,6 +3,7 @@ cache/
 *.pyc
 __pycache__/
 .coverage
+tmp/remote-llm-runs/
 
 # Environment
 .env
