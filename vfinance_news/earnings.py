@@ -3,7 +3,7 @@
 Earnings Calendar - Track earnings dates for portfolio stocks.
 
 Features:
-- Fetch earnings dates from FMP API
+- Fetch earnings dates from Finnhub API
 - Show upcoming earnings in daily briefing
 - Alert 24h before earnings release
 - Cache results to avoid API spam
@@ -47,20 +47,6 @@ def _get_portfolio_file() -> Path:
 PORTFOLIO_FILE = _get_portfolio_file()
 EARNINGS_CACHE = CACHE_DIR / "earnings_calendar.json"
 MANUAL_EARNINGS = CONFIG_DIR / "manual_earnings.json"  # For JP/other stocks not in Finnhub
-
-# API Keys
-def get_fmp_key() -> str:
-    """Get FMP API key from environment or .env file."""
-    key = os.environ.get("FMP_API_KEY", "")
-    if not key:
-        env_file = Path.home() / ".openclaw" / ".env"
-        if env_file.exists():
-            for line in env_file.read_text().splitlines():
-                if line.startswith("FMP_API_KEY="):
-                    key = line.split("=", 1)[1].strip()
-                    break
-    return key
-
 
 def load_portfolio() -> list[dict]:
     """Load portfolio from CSV."""

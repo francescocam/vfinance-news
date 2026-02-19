@@ -101,19 +101,19 @@ vfinance-news market --json
 
 ```bash
 # List portfolio
-vfinance-news portfolio-list
+vfinance-news portfolio list
 
 # Add stock
-vfinance-news portfolio-add NVDA --name "NVIDIA Corporation" --category Tech
+vfinance-news portfolio add NVDA --name "NVIDIA Corporation" --category Tech
 
 # Remove stock
-vfinance-news portfolio-remove TSLA
+vfinance-news portfolio remove TSLA
 
 # Import from CSV
-vfinance-news portfolio-import ~/my_stocks.csv
+vfinance-news portfolio import ~/my_stocks.csv
 
 # Interactive portfolio creation
-vfinance-news portfolio-create
+vfinance-news portfolio create
 ```
 
 ### Ticker News

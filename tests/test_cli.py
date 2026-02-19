@@ -1,5 +1,8 @@
 """Smoke tests for the Python CLI entrypoint."""
 
+import sys
+import types
+
 import pytest
 
 from vfinance_news import cli
@@ -29,3 +32,40 @@ def test_vfinance_news_setup_help(monkeypatch, capsys):
         cli.main()
     out = capsys.readouterr().out
     assert "usage:" in out
+
+
+def test_vfinance_news_portfolio_add_routes_to_portfolio_manager(monkeypatch):
+    captured: dict[str, list[str] | None] = {"argv": None}
+
+    def fake_portfolio_main():
+        captured["argv"] = list(sys.argv)
+
+    monkeypatch.setitem(sys.modules, "vfinance_news.portfolio", types.SimpleNamespace(main=fake_portfolio_main))
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "portfolio", "add", "CSU.TO"])
+
+    cli.main()
+
+    assert captured["argv"] == ["vfinance-news portfolio", "add", "CSU.TO"]
+
+
+def test_vfinance_news_portfolio_routes_to_news_fetcher(monkeypatch):
+    called = {"fetch_news": False}
+
+    def fake_fetch_news_main():
+        called["fetch_news"] = True
+
+    fake_module = types.SimpleNamespace(main=fake_fetch_news_main)
+    monkeypatch.setitem(sys.modules, "vfinance_news.fetch_news", fake_module)
+    import vfinance_news
+    monkeypatch.setattr(vfinance_news, "fetch_news", fake_module, raising=False)
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "portfolio"])
+
+    cli.main()
+
+    assert called["fetch_news"] is True
+
+
+def test_vfinance_news_legacy_portfolio_alias_rejected(monkeypatch):
+    monkeypatch.setattr("sys.argv", ["vfinance-news", "portfolio-add", "NVDA"])
+    with pytest.raises(SystemExit):
+        cli.main()

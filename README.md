@@ -25,6 +25,8 @@ vfinance-news briefing --morning --lang de
 vfinance-news briefing --morning --lang de --fast --deadline 300
 ```
 
+Full command reference: `docs/CLI_USAGE.md`
+
 ## Environment Variables
 
 | Variable | Description | Example |
@@ -134,10 +136,10 @@ The skill includes a Lobster workflow (`workflows/briefing.yaml`) that:
 Manage your stock watchlist in `config/portfolio.csv`:
 
 ```bash
-vfinance-news portfolio-list              # View portfolio
-vfinance-news portfolio-add NVDA          # Add stock
-vfinance-news portfolio-remove TSLA       # Remove stock
-vfinance-news portfolio-import stocks.csv # Import from CSV
+vfinance-news portfolio list              # View portfolio
+vfinance-news portfolio add NVDA          # Add stock
+vfinance-news portfolio remove TSLA       # Remove stock
+vfinance-news portfolio import stocks.csv # Import from CSV
 ```
 
 Portfolio briefings show:

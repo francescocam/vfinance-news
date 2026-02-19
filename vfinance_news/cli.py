@@ -35,13 +35,10 @@ def _build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("alerts", help="Price target alerts")
     subparsers.add_parser("earnings", help="Earnings calendar")
 
-    subparsers.add_parser("portfolio-list", help="List portfolio stocks")
-    subparsers.add_parser("portfolio-add", help="Add stock to portfolio")
-    subparsers.add_parser("portfolio-remove", help="Remove stock from portfolio")
-    subparsers.add_parser("portfolio-import", help="Import portfolio from CSV")
-    subparsers.add_parser("portfolio-create", help="Interactive portfolio creation")
-
     return parser
+
+
+PORTFOLIO_MANAGER_SUBCOMMANDS = {"list", "add", "remove", "import", "create", "symbols"}
 
 
 def main() -> None:
@@ -84,6 +81,14 @@ def main() -> None:
         fetch_news.main()
         return
     if args.command == "portfolio":
+        # Route explicit portfolio management subcommands.
+        if remaining and remaining[0] in PORTFOLIO_MANAGER_SUBCOMMANDS:
+            from vfinance_news import portfolio
+
+            sys.argv = ["vfinance-news portfolio"] + remaining
+            portfolio.main()
+            return
+
         from vfinance_news import fetch_news
 
         sys.argv = ["vfinance-news portfolio", "portfolio"] + remaining
@@ -110,37 +115,6 @@ def main() -> None:
 
         sys.argv = ["vfinance-news earnings"] + remaining
         earnings.main()
-        return
-
-    if args.command == "portfolio-list":
-        from vfinance_news import portfolio
-
-        sys.argv = ["vfinance-news portfolio-list", "list"] + remaining
-        portfolio.main()
-        return
-    if args.command == "portfolio-add":
-        from vfinance_news import portfolio
-
-        sys.argv = ["vfinance-news portfolio-add", "add"] + remaining
-        portfolio.main()
-        return
-    if args.command == "portfolio-remove":
-        from vfinance_news import portfolio
-
-        sys.argv = ["vfinance-news portfolio-remove", "remove"] + remaining
-        portfolio.main()
-        return
-    if args.command == "portfolio-import":
-        from vfinance_news import portfolio
-
-        sys.argv = ["vfinance-news portfolio-import", "import"] + remaining
-        portfolio.main()
-        return
-    if args.command == "portfolio-create":
-        from vfinance_news import portfolio
-
-        sys.argv = ["vfinance-news portfolio-create", "create"] + remaining
-        portfolio.main()
         return
 
     raise SystemExit(f"Unknown command: {args.command}")

@@ -248,7 +248,7 @@ def run_setup(args):
     
     print("\n✅ Setup complete!")
     print("\nNext steps:")
-    print("  • Run 'vfinance-news portfolio-list' to check your watchlist")
+    print("  • Run 'vfinance-news portfolio list' to check your watchlist")
     print("  • Run 'vfinance-news briefing --morning' to test a briefing")
     print("  • Run 'vfinance-news market' to see market overview")
     print()

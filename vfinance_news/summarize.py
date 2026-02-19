@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 News Summarizer - Generate AI summaries of market news in configurable language.
-Uses MiniMax M2.5 for summarization and translation.
+Uses OpenClaw agent for summarization and API/agent fallbacks for translation.
 """
 
 import argparse
@@ -34,7 +34,6 @@ PORTFOLIO_MOVER_MAX = 8
 PORTFOLIO_MOVER_MIN_ABS_CHANGE = 1.0
 MAX_HEADLINES_IN_PROMPT = 10
 TOP_HEADLINES_COUNT = 5
-DEFAULT_LLM_FALLBACK = ["minimax", "minimax-direct", "claude"]
 HEADLINE_SHORTLIST_SIZE = 20
 HEADLINE_MERGE_THRESHOLD = 0.82
 HEADLINE_MAX_AGE_HOURS = 72
@@ -49,8 +48,6 @@ STOPWORDS = {
 INTL_TICKER_NAME_OVERRIDES = {
     "8411.T": "Mizuho Financial",
 }
-
-SUPPORTED_MODELS = {"minimax", "minimax-direct", "claude"}
 
 # Portfolio prioritization weights
 PORTFOLIO_PRIORITY_WEIGHTS = {
@@ -125,17 +122,6 @@ def score_portfolio_stock(symbol: str, stock_data: dict) -> float:
     # Weighted sum
     w = PORTFOLIO_PRIORITY_WEIGHTS
     return type_score * w["type"] + volatility_score * w["volatility"] + news_score * w["news_volume"]
-
-
-def parse_model_list(raw: str | None, default: list[str]) -> list[str]:
-    if not raw:
-        return default
-    items = [item.strip() for item in raw.split(",") if item.strip()]
-    result: list[str] = []
-    for item in items:
-        if item in SUPPORTED_MODELS and item not in result:
-            result.append(item)
-    return result or default
 
 
 def ticker_to_name(symbol: str, portfolio_meta: dict | None = None) -> str:
@@ -1168,13 +1154,13 @@ def translate_headline_items(headlines: list[dict], deadline: float | None) -> b
     return True
 
 
-def summarize_with_claude(
+def summarize_with_openclaw(
     content: str,
     language: str = "de",
     style: str = "briefing",
     deadline: float | None = None,
 ) -> str:
-    """Generate AI summary using Claude via OpenClaw agent."""
+    """Generate AI summary via OpenClaw agent."""
     prompt = f"""{STYLE_PROMPTS.get(style, STYLE_PROMPTS['briefing'])}
 
 {LANG_PROMPTS.get(language, LANG_PROMPTS['de'])}
@@ -1200,13 +1186,13 @@ Use only the following information for the briefing:
             timeout=proc_timeout
         )
     except subprocess.TimeoutExpired:
-        return "⚠️ Claude briefing error: timeout"
+        return "⚠️ OpenClaw briefing error: timeout"
     except TimeoutError:
-        return "⚠️ Claude briefing error: deadline exceeded"
+        return "⚠️ OpenClaw briefing error: deadline exceeded"
     except FileNotFoundError:
-        return "⚠️ Claude briefing error: openclaw CLI not found"
+        return "⚠️ OpenClaw briefing error: openclaw CLI not found"
     except OSError as exc:
-        return f"⚠️ Claude briefing error: {exc}"
+        return f"⚠️ OpenClaw briefing error: {exc}"
 
     if result.returncode == 0:
         reply = extract_agent_reply(result.stdout)
@@ -1215,114 +1201,7 @@ Use only the following information for the briefing:
         return reply
 
     stderr = result.stderr.strip() or "unknown error"
-    return f"⚠️ Claude briefing error: {stderr}"
-
-
-def summarize_with_minimax(
-    content: str,
-    language: str = "de",
-    style: str = "briefing",
-    deadline: float | None = None,
-) -> str:
-    """Generate AI summary using MiniMax model via openclaw agent."""
-    prompt = f"""{STYLE_PROMPTS.get(style, STYLE_PROMPTS['briefing'])}
-
-{LANG_PROMPTS.get(language, LANG_PROMPTS['de'])}
-
-Use only the following information for the briefing:
-
-{content}
-"""
-
-    try:
-        cli_timeout = clamp_timeout(120, deadline)
-        proc_timeout = clamp_timeout(150, deadline)
-        result = subprocess.run(
-            [
-                'openclaw', 'agent',
-                '--session-id', 'vfinance-news-briefing',
-                '--message', prompt,
-                '--json',
-                '--timeout', str(cli_timeout)
-            ],
-            capture_output=True,
-            text=True,
-            timeout=proc_timeout
-        )
-    except subprocess.TimeoutExpired:
-        return "⚠️ MiniMax briefing error: timeout"
-    except TimeoutError:
-        return "⚠️ MiniMax briefing error: deadline exceeded"
-    except FileNotFoundError:
-        return "⚠️ MiniMax briefing error: openclaw CLI not found"
-    except OSError as exc:
-        return f"⚠️ MiniMax briefing error: {exc}"
-
-    if result.returncode == 0:
-        reply = extract_agent_reply(result.stdout)
-        # Add financial disclaimer
-        reply += format_disclaimer(language)
-        return reply
-
-    stderr = result.stderr.strip() or "unknown error"
-    return f"⚠️ MiniMax briefing error: {stderr}"
-
-
-def summarize_with_minimax_direct(
-    content: str,
-    language: str = "de",
-    style: str = "briefing",
-    deadline: float | None = None,
-) -> str:
-    """Generate AI summary using MiniMax M2.5 Anthropic API directly (no CLI dependency)."""
-
-    prompt = f"""{STYLE_PROMPTS.get(style, STYLE_PROMPTS['briefing'])}
-
-{LANG_PROMPTS.get(language, LANG_PROMPTS['de'])}
-
-Here are the current market items:
-
-{content}
-"""
-
-    api_key = (os.getenv("MINIMAX_CODING_PLAN_API_KEY") or "").strip()
-    if not api_key:
-        return "⚠️ MiniMax direct error: MINIMAX_CODING_PLAN_API_KEY not set"
-
-    payload = json.dumps({
-        "model": "MiniMax-M2.5",
-        "max_tokens": 8192,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode("utf-8")
-
-    url = "https://api.minimax.io/anthropic/v1/messages"
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-    }
-
-    try:
-        timeout = clamp_timeout(60, deadline)
-        req = urllib.request.Request(
-            url=url, data=payload, headers=headers, method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=timeout) as response:
-            raw = response.read().decode("utf-8")
-        body = json.loads(raw)
-    except HTTPError as e:
-        return f"⚠️ MiniMax direct error: HTTP {e.code}"
-    except (TimeoutError, URLError, OSError) as e:
-        return f"⚠️ MiniMax direct error: {e}"
-    except json.JSONDecodeError as e:
-        return f"⚠️ MiniMax direct error: invalid JSON: {e}"
-
-    reply_text = _extract_minimax_text(body)
-    if not reply_text:
-        return "⚠️ MiniMax direct error: empty response"
-
-    reply_text += format_disclaimer(language)
-    return reply_text
+    return f"⚠️ OpenClaw briefing error: {stderr}"
 
 
 def format_market_data(market_data: dict) -> str:
@@ -1929,20 +1808,7 @@ def generate_briefing(args):
     else:
         content = raw_content
 
-    model = getattr(args, 'model', 'claude')
-    summary_primary = os.environ.get("VFINANCE_NEWS_SUMMARY_MODEL")
-    summary_fallback_env = os.environ.get("VFINANCE_NEWS_SUMMARY_FALLBACKS")
-    summary_list = parse_model_list(
-        summary_fallback_env,
-        config.get("llm", {}).get("summary_model_order", DEFAULT_LLM_FALLBACK),
-    )
-    if summary_primary:
-        if summary_primary not in summary_list:
-            summary_list = [summary_primary] + summary_list
-        else:
-            summary_list = [summary_primary] + [m for m in summary_list if m != summary_primary]
-    if args.llm and model and model in SUPPORTED_MODELS:
-        summary_list = [model] + [m for m in summary_list if m != model]
+    summary_attempts = ["openclaw"]
 
     summary_mode = "deterministic"
     summary_model_used = "deterministic"
@@ -1954,7 +1820,7 @@ def generate_briefing(args):
         if args.debug:
             debug_payload.update({
                 "summary_model_used": summary_model_used,
-                "summary_model_attempts": summary_list,
+                "summary_model_attempts": summary_attempts,
             })
     elif args.style == "briefing" and not args.llm:
         summary = build_briefing_summary(market_data, portfolio_data, movers, top_headlines, labels, language)
@@ -1963,32 +1829,22 @@ def generate_briefing(args):
         if args.debug:
             debug_payload.update({
                 "summary_model_used": summary_model_used,
-                "summary_model_attempts": summary_list,
+                "summary_model_attempts": summary_attempts,
             })
     else:
-        print(f"🤖 Generating AI summary with fallback order: {', '.join(summary_list)}", file=sys.stderr)
-        summary = ""
-        summary_used = None
+        print("🤖 Generating AI summary via OpenClaw", file=sys.stderr)
         summary_mode = "llm"
-        summary_model_used = "llm_failed"
-        for candidate in summary_list:
-            if candidate == "minimax":
-                summary = summarize_with_minimax(content, language, args.style, deadline=deadline)
-            elif candidate == "minimax-direct":
-                summary = summarize_with_minimax_direct(content, language, args.style, deadline=deadline)
-            else:
-                summary = summarize_with_claude(content, language, args.style, deadline=deadline)
-
-            if not summary.startswith("⚠️"):
-                summary_used = candidate
-                summary_model_used = candidate
-                break
+        summary = summarize_with_openclaw(content, language, args.style, deadline=deadline)
+        if summary.startswith("⚠️"):
             print(summary, file=sys.stderr)
+            summary_model_used = "llm_failed"
+        else:
+            summary_model_used = "openclaw"
 
-        if args.debug and summary_used:
+        if args.debug:
             debug_payload.update({
-                "summary_model_used": summary_used,
-                "summary_model_attempts": summary_list,
+                "summary_model_used": summary_model_used,
+                "summary_model_attempts": summary_attempts,
             })
 
     summary_structure_ok = True
@@ -2051,7 +1907,7 @@ def generate_briefing(args):
             'summary': summary,
             'summary_mode': summary_mode,
             'summary_model_used': summary_model_used,
-            'summary_model_attempts': summary_list,
+            'summary_model_attempts': summary_attempts,
             'summary_structure_ok': summary_structure_ok,
             'summary_missing_sections': summary_missing_sections,
             'generator': {
@@ -2085,7 +1941,6 @@ def main():
                         default='briefing', help='Summary style')
     parser.add_argument('--time', choices=['morning', 'evening'],
                         default=None, help='Briefing type (default: auto)')
-    # Note: --model removed - model selection is now handled by openclaw gateway config
     parser.add_argument('--json', action='store_true', help='Output as JSON')
     parser.add_argument('--research', action='store_true', help='Include deep research section (slower)')
     parser.add_argument('--llm', action='store_true', help='Use LLM for briefing (default: deterministic)')

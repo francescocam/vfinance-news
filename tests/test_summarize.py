@@ -358,7 +358,7 @@ def test_generate_briefing_auto_time_evening(capsys, monkeypatch):
     monkeypatch.setattr(summarize, "get_market_news", fake_market_news)
     monkeypatch.setattr(summarize, "get_portfolio_news", lambda *_a, **_k: None)
     monkeypatch.setattr(summarize, "get_portfolio_movers", lambda *_a, **_k: {"movers": []})
-    monkeypatch.setattr(summarize, "summarize_with_claude", fake_summary)
+    monkeypatch.setattr(summarize, "summarize_with_openclaw", fake_summary)
     monkeypatch.setattr(summarize, "datetime", FixedDateTime)
 
     args = type(
@@ -368,7 +368,6 @@ def test_generate_briefing_auto_time_evening(capsys, monkeypatch):
             "lang": "de",
             "style": "briefing",
             "time": None,
-            "model": "claude",
             "json": False,
             "research": False,
             "deadline": None,
@@ -381,6 +380,57 @@ def test_generate_briefing_auto_time_evening(capsys, monkeypatch):
     summarize.generate_briefing(args)
     stdout = capsys.readouterr().out
     assert "Börsen Abend-Briefing" in stdout
+
+
+def test_generate_briefing_llm_uses_openclaw(capsys, monkeypatch):
+    def fake_market_news(*_args, **_kwargs):
+        return {
+            "headlines": [
+                {"source": "CNBC", "title": "Headline one", "link": "https://example.com/1"},
+                {"source": "Yahoo", "title": "Headline two", "link": "https://example.com/2"},
+            ],
+            "markets": {
+                "us": {
+                    "name": "US Markets",
+                    "indices": {
+                        "^GSPC": {"name": "S&P 500", "data": {"price": 100, "change_percent": 1.0}},
+                    },
+                }
+            },
+        }
+
+    monkeypatch.setattr(summarize, "get_market_news", fake_market_news)
+    monkeypatch.setattr(summarize, "get_portfolio_news", lambda *_a, **_k: None)
+    monkeypatch.setattr(summarize, "get_portfolio_movers", lambda *_a, **_k: {"movers": []})
+    monkeypatch.setattr(summarize, "summarize_with_openclaw", lambda *_a, **_k: "LLM OK")
+    monkeypatch.setattr(
+        summarize,
+        "build_briefing_summary",
+        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("deterministic summary should not be used")),
+    )
+
+    args = type(
+        "Args",
+        (),
+        {
+            "lang": "en",
+            "style": "briefing",
+            "time": "morning",
+            "json": True,
+            "research": False,
+            "deadline": None,
+            "fast": False,
+            "llm": True,
+            "debug": False,
+        },
+    )()
+
+    summarize.generate_briefing(args)
+    output = json.loads(capsys.readouterr().out)
+    assert output["summary"] == "LLM OK"
+    assert output["summary_mode"] == "llm"
+    assert output["summary_model_used"] == "openclaw"
+    assert output["summary_model_attempts"] == ["openclaw"]
 
 
 # --- Tests for watchpoints feature (Issue #92) ---
