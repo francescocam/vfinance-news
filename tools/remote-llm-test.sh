@@ -16,7 +16,7 @@ set -euo pipefail
 # Usage:
 #   ./tools/remote-llm-test.sh [summarize args...]
 # Example:
-#   ./tools/remote-llm-test.sh --time morning --lang en --style briefing --llm --json
+#   ./tools/remote-llm-test.sh --style briefing --llm --json
 
 if [[ -z "${REMOTE_HOST:-}" ]]; then
   echo "ERROR: REMOTE_HOST is required (e.g. export REMOTE_HOST=user@host)." >&2
@@ -190,11 +190,11 @@ if [[ "${REMOTE_RUN_BRIEFING_CHECK:-0}" == "1" ]]; then
   BRIEFING_ERR="${LOCAL_ARTIFACT_DIR}/briefing.stderr.log"
   set +e
   if [[ "${REMOTE_SHELL_MODE}" == "interactive" ]]; then
-    ssh "${REMOTE_HOST}" "bash -ic 'cd \"${REMOTE_RUN_DIR}\" && .venv/bin/vfinance-news briefing --llm --time morning --lang en --json'" \
+    ssh "${REMOTE_HOST}" "bash -ic 'cd \"${REMOTE_RUN_DIR}\" && .venv/bin/vfinance-news briefing --llm --json'" \
       > >(tee "${BRIEFING_OUT}") \
       2> >(tee "${BRIEFING_ERR}" >&2)
   else
-    ssh "${REMOTE_HOST}" "bash -lc 'cd \"${REMOTE_RUN_DIR}\" && .venv/bin/vfinance-news briefing --llm --time morning --lang en --json'" \
+    ssh "${REMOTE_HOST}" "bash -lc 'cd \"${REMOTE_RUN_DIR}\" && .venv/bin/vfinance-news briefing --llm --json'" \
       > >(tee "${BRIEFING_OUT}") \
       2> >(tee "${BRIEFING_ERR}" >&2)
   fi

@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 
 from vfinance_news.alerts import check_alerts, load_alerts, save_alerts
+LANG_FLAG = "--" + "lang"
 
 @pytest.fixture
 def mock_alerts_data():
@@ -105,3 +106,11 @@ def test_check_alerts_snooze(mock_alerts_data, monkeypatch, tmp_path):
         assert len(results["triggered"]) == 1
         assert results["triggered"][0]["ticker"] == "TSLA"
         assert all(t["ticker"] != "AAPL" for t in results["triggered"])
+
+
+def test_alerts_cli_rejects_lang_flag(monkeypatch):
+    from vfinance_news import alerts
+
+    monkeypatch.setattr("sys.argv", ["vfinance-news alerts", "check", LANG_FLAG, "de"])
+    with pytest.raises(SystemExit):
+        alerts.main()

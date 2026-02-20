@@ -1,5 +1,5 @@
 # Weekly Earnings Alert Workflow for Cron (No Approval Gate)
-# Usage: lobster run --file workflows/earnings-weekly-cron.yaml --args-json '{"lang":"en"}'
+# Usage: lobster run --file workflows/earnings-weekly-cron.yaml
 #
 # Schedule: Sunday 7:00 AM PT (before market week starts)
 # Prints upcoming week's earnings calendar summary
@@ -7,17 +7,12 @@
 name: vfinance.earnings.weekly.cron
 description: Check weekly earnings preview for portfolio stocks
 
-args:
-  lang:
-    default: en
-    description: "Language: en or de"
-
 steps:
   # Check earnings calendar for upcoming week
   - id: check_earnings
     command: |
       SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
-      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --week --lang "${lang}"
+      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --week
     description: Get upcoming week's earnings calendar
 
   # Print earnings preview if there's content
@@ -26,7 +21,7 @@ steps:
       MSG=$(cat)
       MSG=$(echo "$MSG" | tr -d '\r')
       # Only print if there are actual earnings next week
-      if echo "$MSG" | grep -qE "EARNINGS (NEXT WEEK|NÄCHSTE WOCHE)"; then
+      if echo "$MSG" | grep -q "EARNINGS NEXT WEEK"; then
         echo "$MSG"
       else
         echo "No earnings next week"

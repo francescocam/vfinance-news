@@ -1,11 +1,11 @@
 ---
 name: vfinance-news
-description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Supports English/German output. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries.
+description: Market news briefings with AI summaries and price alerts. Aggregates headlines from US/Europe/Japan markets. Use when: 'stock news', 'market updates', 'morning briefing', 'evening market wrap', 'financial headlines', 'price alerts', 'what happened in the market'. Outputs in English. NOT for fundamental analysis or scoring (use equity-research). NOT for raw financial data queries.
 ---
 
 # Finance News Skill
 
-AI-powered market news briefings with configurable language output.
+AI-powered market news briefings.
 
 ## First-Time Setup
 
@@ -18,7 +18,6 @@ vfinance-news setup
 The wizard will guide you through:
 - 📰 **RSS Feeds:** Enable/disable WSJ, Barron's, CNBC, Yahoo, etc.
 - 📊 **Markets:** Choose regions (US, Europe, Japan, Asia)
-- 🌐 **Language:** Set default language (English/German)
 - ⏰ **Schedule:** Configure morning/evening cron times
 
 You can also configure specific sections:
@@ -59,7 +58,7 @@ vfinance-news news AAPL
 
 ### 🤖 AI Summaries
 - Gemini-powered analysis
-- Configurable language (English/German)
+- English-only output
 - Briefing styles: summary, analysis, headlines
 
 ### 📅 Automated Briefings
@@ -73,9 +72,6 @@ vfinance-news news AAPL
 ```bash
 # Briefing (English is default)
 vfinance-news briefing
-
-# German language option
-vfinance-news briefing --lang de
 
 # Analysis style (more detailed)
 vfinance-news briefing --style analysis
@@ -137,7 +133,6 @@ Location: `~/clawd/skills/vfinance-news/config/config.json` (legacy fallback: `c
 
 - RSS feeds for WSJ, Barron's, CNBC, Yahoo
 - Market indices by region
-- Language settings
 
 ## Cron Jobs
 
@@ -198,20 +193,6 @@ The agent will automatically use this skill when asked about:
 - "Generate morning briefing"
 - "What's happening with AAPL?"
 
-### With Lobster (Workflow Engine)
-
-Run briefings via [Lobster](https://github.com/openclaw/lobster) for approval gates and resumability:
-
-```bash
-# Run with approval
-lobster "workflows.run --file workflows/briefing.yaml"
-
-# With custom args
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"lang\":\"en\"}'"
-```
-
-See `workflows/README.md` for full documentation.
-
 ## Files
 
 ```
@@ -219,7 +200,7 @@ skills/vfinance-news/
 ├── SKILL.md              # This documentation
 ├── config/
 │   ├── portfolio.csv     # Your watchlist
-│   ├── config.json       # RSS/API/language configuration
+│   ├── config.json       # RSS/API configuration
 │   ├── alerts.json       # Price target alerts
 │   └── manual_earnings.json  # Earnings calendar overrides
 ├── vfinance_news/

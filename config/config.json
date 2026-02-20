@@ -76,10 +76,6 @@
     }
   },
   "headline_sources": ["reuters", "wsj", "ft", "bloomberg", "marketwatch", "cnbc", "yahoo"],
-  "headline_sources_by_lang": {
-    "de": ["wallstreet_online", "tagesschau", "handelsblatt", "zeit", "reuters", "wsj", "ft", "bloomberg", "marketwatch", "cnbc", "yahoo"],
-    "en": ["reuters", "wsj", "ft", "bloomberg", "marketwatch", "cnbc", "yahoo"]
-  },
   "headline_exclude": [],
   "source_weights": {
     "reuters": 5,
@@ -98,10 +94,7 @@
     "paid": ["wsj", "ft", "barrons"],
     "free": ["bloomberg", "marketwatch", "yahoo", "cnbc", "tagesschau", "handelsblatt", "zeit", "wallstreet_online"]
   },
-  "headline_shortlist_size_by_lang": {
-    "de": 30,
-    "en": 20
-  },
+  "headline_shortlist_size": 20,
   "portfolio_deadline_sec": 360,
   "portfolio": {
     "briefing_limit": 10,
@@ -132,10 +125,6 @@
       "index_names": {"^N225": "Nikkei 225"}
     }
   },
-  "language": {
-    "default": "en",
-    "supported": ["en", "de"]
-  },
   "schedule": {
     "morning": {
       "enabled": true,
@@ -148,102 +137,6 @@
       "cron": "0 13 * * 1-5",
       "timezone": "America/Los_Angeles",
       "description": "US Market Close (4:00 PM ET = 1:00 PM PT)"
-    }
-  },
-  "llm": {
-    "headline_model_order": ["gemini", "minimax", "claude"],
-    "summary_model_order": ["gemini", "minimax", "claude"],
-    "translation_model_order": ["gemini", "minimax", "claude"]
-  },
-  "translations": {
-    "en": {
-      "title_morning": "Morning Briefing",
-      "title_evening": "Evening Briefing",
-      "title_prefix": "Market",
-      "time_suffix": "",
-      "heading_briefing": "Market Briefing",
-      "heading_markets": "Markets",
-      "heading_sentiment": "Sentiment",
-      "heading_top_headlines": "Top 5 Headlines",
-      "heading_portfolio_impact": "Portfolio Impact",
-      "heading_portfolio_movers": "Portfolio Movers",
-      "heading_watchpoints": "Watchpoints",
-      "watchpoints_legend": "_Legend: `vs Index` = move minus S&P 500 move._",
-      "watchpoints_section_clusters": "Sector Rotation",
-      "watchpoints_section_single_names": "Single-Name Moves",
-      "watchpoints_section_market_context": "Market Context",
-      "no_data": "No data available",
-      "no_movers": "No significant moves (±1%)",
-      "follows_market": " -- follows market",
-      "no_catalyst": " -- no specific catalyst",
-      "likely_sector_contagion": " -- likely sector contagion",
-      "rec_bullish": "Selective opportunities, keep risk management tight.",
-      "rec_bearish": "Reduce risk and prioritize liquidity.",
-      "rec_neutral": "Wait-and-see, focus on quality names.",
-      "rec_unknown": "No clear recommendation without reliable data.",
-      "sources_header": "Sources",
-      "sentiment_map": {
-        "Bullish": "Bullish",
-        "Bearish": "Bearish",
-        "Neutral": "Neutral",
-        "No data available": "No data available"
-      }
-    },
-    "de": {
-      "title_morning": "Morgen-Briefing",
-      "title_evening": "Abend-Briefing",
-      "title_prefix": "Börsen",
-      "time_suffix": "Uhr",
-      "heading_briefing": "Marktbriefing",
-      "heading_markets": "Märkte",
-      "heading_sentiment": "Stimmung",
-      "heading_top_headlines": "Top 5 Schlagzeilen",
-      "heading_portfolio_impact": "Portfolio-Auswirkung",
-      "heading_portfolio_movers": "Portfolio-Bewegungen",
-      "heading_watchpoints": "Beobachtungspunkte",
-      "watchpoints_legend": "_Legende: `vs Index` = Kursbewegung minus S&P-500-Bewegung._",
-      "watchpoints_section_clusters": "Sektorrotation",
-      "watchpoints_section_single_names": "Einzeltitel",
-      "watchpoints_section_market_context": "Marktkontext",
-      "no_data": "Keine Daten verfügbar",
-      "no_movers": "Keine deutlichen Bewegungen (±1%)",
-      "follows_market": " -- folgt dem Markt",
-      "no_catalyst": " -- kein spezifischer Katalysator",
-      "likely_sector_contagion": " -- wahrscheinlich Sektor-Ansteckung",
-      "rec_bullish": "Chancen selektiv nutzen, aber Risikomanagement beibehalten.",
-      "rec_bearish": "Risiken reduzieren und Liquidität priorisieren.",
-      "rec_neutral": "Abwarten und Fokus auf Qualitätstitel.",
-      "rec_unknown": "Keine klare Empfehlung ohne belastbare Daten.",
-      "sources_header": "Quellen",
-      "sentiment_map": {
-        "Bullish": "Bullisch",
-        "Bearish": "Bärisch",
-        "Neutral": "Neutral",
-        "No data available": "Keine Daten verfügbar"
-      },
-      "months": {
-        "January": "Januar",
-        "February": "Februar",
-        "March": "März",
-        "April": "April",
-        "May": "Mai",
-        "June": "Juni",
-        "July": "Juli",
-        "August": "August",
-        "September": "September",
-        "October": "Oktober",
-        "November": "November",
-        "December": "Dezember"
-      },
-      "days": {
-        "Monday": "Montag",
-        "Tuesday": "Dienstag",
-        "Wednesday": "Mittwoch",
-        "Thursday": "Donnerstag",
-        "Friday": "Freitag",
-        "Saturday": "Samstag",
-        "Sunday": "Sonntag"
-      }
     }
   }
 }

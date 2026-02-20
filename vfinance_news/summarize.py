@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-News Summarizer - Generate AI summaries of market news in configurable language.
-Uses OpenClaw agent for summarization and API/agent fallbacks for translation.
+News Summarizer - Generate AI summaries of market news in English.
 """
 
 import argparse
@@ -10,7 +9,6 @@ import os
 import re
 import subprocess
 import sys
-import time
 from dataclasses import dataclass
 from datetime import datetime
 from difflib import SequenceMatcher
@@ -18,7 +16,6 @@ from pathlib import Path
 
 import urllib.parse
 import urllib.request
-from urllib.error import HTTPError, URLError
 from vfinance_news.utils import clamp_timeout, compute_deadline, ensure_venv, time_left
 
 ensure_venv()
@@ -168,9 +165,37 @@ def format_symbol_display(symbol: str, info: dict | None = None, portfolio_meta:
         return f"{name} ({symbol})"
     return symbol
 
-LANG_PROMPTS = {
-    "de": "Output must be in German only.",
-    "en": "Output must be in English only."
+ENGLISH_LABELS = {
+    "title_morning": "Morning Briefing",
+    "title_evening": "Evening Briefing",
+    "title_prefix": "Market",
+    "time_suffix": "",
+    "heading_briefing": "Market Briefing",
+    "heading_markets": "Markets",
+    "heading_sentiment": "Sentiment",
+    "heading_top_headlines": "Top 5 Headlines",
+    "heading_portfolio_impact": "Portfolio Impact",
+    "heading_portfolio_movers": "Portfolio Movers",
+    "heading_watchpoints": "Watchpoints",
+    "watchpoints_legend": "_Legend: `vs Index` = move relative to S&P 500._",
+    "watchpoints_section_clusters": "Sector Rotation",
+    "watchpoints_section_single_names": "Single-Name Moves",
+    "watchpoints_section_market_context": "Market Context",
+    "no_data": "No data available",
+    "no_movers": "No significant moves (±1%)",
+    "follows_market": " -- follows market",
+    "likely_sector_contagion": " -- likely sector contagion",
+    "rec_bullish": "Selective opportunities, keep risk management tight.",
+    "rec_bearish": "Reduce risk and prioritize liquidity.",
+    "rec_neutral": "Wait-and-see, focus on quality names.",
+    "rec_unknown": "No clear recommendation without reliable data.",
+    "sources_header": "Sources",
+    "sentiment_map": {
+        "Bullish": "Bullish",
+        "Bearish": "Bearish",
+        "Neutral": "Neutral",
+        "No data available": "No data available",
+    },
 }
 
 
@@ -217,14 +242,8 @@ def format_timezone_header() -> str:
     return f"🌍 New York {ny_time} | Berlin {berlin_time} | Tokyo {tokyo_time}"
 
 
-def format_disclaimer(language: str = "en") -> str:
+def format_disclaimer() -> str:
     """Generate financial disclaimer text."""
-    if language == "de":
-        return """
----
-⚠️ **Haftungsausschluss:** Dieses Briefing dient ausschließlich Informationszwecken und stellt keine 
-Anlageberatung dar. Treffen Sie Ihre eigenen Anlageentscheidungen und führen Sie eigene Recherchen durch.
-"""
     return """
 ---
 **Disclaimer:** This briefing is for informational purposes only and does not constitute 
@@ -288,18 +307,6 @@ def load_config():
     raise FileNotFoundError("Missing config/config.json")
 
 
-def load_translations(config: dict) -> dict:
-    """Load translation strings for output labels."""
-    translations = config.get("translations")
-    if isinstance(translations, dict):
-        return translations
-    path = CONFIG_DIR / "translations.json"
-    if path.exists():
-        print("⚠️ translations missing from config.json; falling back to config/translations.json", file=sys.stderr)
-        with open(path, 'r') as f:
-            return json.load(f)
-    return {}
-
 def infer_briefing_time(now: datetime | None = None) -> str:
     """Determine briefing bucket by hard local-time cutoff."""
     current = now or datetime.now()
@@ -316,7 +323,6 @@ def write_debug_log(args, market_data: dict, portfolio_data: dict | None, briefi
         "timestamp": now.isoformat(),
         "time": briefing_time,
         "style": args.style,
-        "language": args.lang,
         "model": getattr(args, "model", None),
         "llm": bool(args.llm),
         "fast": bool(args.fast),
@@ -640,7 +646,6 @@ def build_watchpoints_data(
 
 def format_watchpoints(
     data: WatchpointsData,
-    language: str,
     labels: dict,
 ) -> str:
     """Format watchpoints with contextual analysis."""
@@ -685,8 +690,7 @@ def format_watchpoints(
         # Build context string
         context = ""
         if mover.matched_headline:
-            headline_text = mover.matched_headline.get("title_de") if language == "de" else None
-            headline_text = headline_text or mover.matched_headline.get("title", "")
+            headline_text = mover.matched_headline.get("title", "")
             headline_text = headline_text.strip()
             if len(headline_text) > 60:
                 headline_text = f"{headline_text[:60]}..."
@@ -709,12 +713,8 @@ def format_watchpoints(
 
     # 3. Market context if significant
     if data.market_wide:
-        if language == "de":
-            direction = "fiel" if data.index_change < 0 else "stieg"
-            market_lines.append(f"⚠️ Breite Marktbewegung: S&P 500 {direction} {abs(data.index_change):.1f}%")
-        else:
-            direction = "fell" if data.index_change < 0 else "rose"
-            market_lines.append(f"⚠️ Market-wide move: S&P 500 {direction} {abs(data.index_change):.1f}%")
+        direction = "fell" if data.index_change < 0 else "rose"
+        market_lines.append(f"⚠️ Market-wide move: S&P 500 {direction} {abs(data.index_change):.1f}%")
 
     if cluster_lines:
         has_content = True
@@ -800,10 +800,9 @@ def score_headline_group(group: dict) -> float:
 
 def select_top_headlines(
     headlines: list[dict],
-    language: str,
     deadline: float | None,
     shortlist_size: int = HEADLINE_SHORTLIST_SIZE,
-) -> tuple[list[dict], list[dict], str | None, str | None]:
+) -> tuple[list[dict], list[dict], str | None]:
     """Select top headlines using deterministic ranking.
     
     Uses rank_headlines() for impact-based scoring with source caps and diversity.
@@ -848,19 +847,7 @@ def select_top_headlines(
         item["source"] = ", ".join(sources) if sources else "Unknown"
         item["link"] = links[0] if links else ""
 
-    # Translate to German if needed - translate FULL shortlist for LLM prompt
-    translation_used = None
-    if language == "de":
-        missing = [item for item in shortlist if not item.get("title_de")]
-        if missing:
-            titles = [item["title"] for item in missing]
-            translated, success = translate_headlines(titles, deadline=deadline)
-            if success:
-                translation_used = "gateway"  # Model selected by gateway
-                for item, translated_title in zip(missing, translated):
-                    item["title_de"] = translated_title
-
-    return selected, shortlist, "gateway", translation_used
+    return selected, shortlist, "gateway"
 
 
 def select_top_headline_ids(shortlist: list[dict], deadline: float | None) -> list[int]:
@@ -895,282 +882,13 @@ def select_top_headline_ids(shortlist: list[dict], deadline: float | None) -> li
     return clean[:TOP_HEADLINES_COUNT]
 
 
-def _build_translation_prompt(titles: list[str]) -> str:
-    """Build the translation prompt for a list of headlines."""
-    prompt_lines = [
-        f"Translate these {len(titles)} English headlines to German.",
-        "Return ONLY a JSON array of strings in the same order.",
-        "Do not add commentary.",
-        "",
-        "Headlines:",
-    ]
-    for idx, title in enumerate(titles, start=1):
-        prompt_lines.append(f"{idx}. {title}")
-    return "\n".join(prompt_lines)
-
-
-def translate_headlines(
-    titles: list[str],
-    deadline: float | None,
-) -> tuple[list[str], bool]:
-    """Translate headlines to German using LLM.
-
-    Uses gateway's configured model with automatic fallback.
-    Returns (translated_titles, success) or (original_titles, False) on failure.
-    """
-    if not titles:
-        return [], True
-
-    print(f"🔤 Translating {len(titles)} headlines...", file=sys.stderr)
-    translated, success = translate_via_gemini_api(titles, deadline=deadline)
-    if success:
-        print("  ↳ ✅ Translation successful via MiniMax API", file=sys.stderr)
-        return translated, True
-
-    print("  ↳ MiniMax API failed, falling back to openclaw agent", file=sys.stderr)
-    prompt = _build_translation_prompt(titles)
-
-    reply = run_agent_prompt(prompt, deadline=deadline, session_id="vfinance-news-translate", timeout=60)
-
-    if reply.startswith("⚠️"):
-        print(f"  ↳ Translation failed: {reply}", file=sys.stderr)
-        return titles, False
-
-    data = parse_translation_array(reply)
-    if data is None:
-        print("  ↳ Invalid JSON translation format from openclaw", file=sys.stderr)
-        print(f"     Reply was: {reply[:200]}...", file=sys.stderr)
-        return titles, False
-    if len(data) == len(titles):
-        print("  ↳ ✅ Translation successful via openclaw agent", file=sys.stderr)
-        return data, True
-    print(f"  ↳ Returned {len(data)} items, expected {len(titles)}", file=sys.stderr)
-
-    return titles, False
-
-
-def parse_translation_array(raw_text: str) -> list[str] | None:
-    """Parse a JSON array of translated strings from plain text or markdown."""
-    json_text = raw_text.strip()
-    if "```" in json_text:
-        match = re.search(r"```(?:json)?\s*(.*?)```", json_text, re.DOTALL)
-        if match:
-            json_text = match.group(1).strip()
-
-    try:
-        data = json.loads(json_text)
-    except json.JSONDecodeError:
-        return None
-
-    if isinstance(data, list) and all(isinstance(item, str) for item in data):
-        return data
-    return None
-
-
-def _extract_minimax_text(body: dict) -> str | None:
-    """Extract text content from a MiniMax Anthropic API response body."""
-    content = body.get("content", [])
-    if not isinstance(content, list):
-        return None
-    text_parts = [
-        block.get("text", "")
-        for block in content
-        if isinstance(block, dict) and block.get("type") == "text"
-    ]
-    reply_text = "\n".join([p for p in text_parts if isinstance(p, str)]).strip()
-    return reply_text or None
-
-
-_MINIMAX_MAX_RETRIES = 2
-_GEMINI_MAX_RETRIES = _MINIMAX_MAX_RETRIES
-
-
-def translate_via_minimax_api(
-    titles: list[str],
-    deadline: float | None,
-) -> tuple[list[str], bool]:
-    """Translate headlines using MiniMax Anthropic API with retry on transient errors."""
-    if not titles:
-        return [], True
-
-    api_key = (os.getenv("MINIMAX_CODING_PLAN_API_KEY") or "").strip()
-    if not api_key:
-        print("  ↳ MINIMAX_CODING_PLAN_API_KEY not set, skipping API translation", file=sys.stderr)
-        return titles, False
-
-    prompt = _build_translation_prompt(titles)
-    payload = json.dumps({
-        "model": "MiniMax-M2.5",
-        "max_tokens": 4096,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode("utf-8")
-
-    url = "https://api.minimax.io/anthropic/v1/messages"
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-    }
-
-    # Scale timeout with headline count: base 5s + 0.5s per headline, max 30s
-    base_timeout = min(30, 5 + len(titles) * 0.5)
-
-    retries = _GEMINI_MAX_RETRIES
-    last_error = None
-    for attempt in range(retries + 1):
-        req = urllib.request.Request(
-            url=url, data=payload, headers=headers, method="POST",
-        )
-        try:
-            timeout = clamp_timeout(base_timeout, deadline)
-            with urllib.request.urlopen(req, timeout=timeout) as response:
-                raw = response.read().decode("utf-8")
-            body = json.loads(raw)
-        except HTTPError as e:
-            last_error = f"HTTP {e.code}"
-            if e.code in (429, 500, 502, 503) and attempt < retries:
-                wait = 1.0 * (attempt + 1)
-                print(f"  ↳ MiniMax API {last_error}, retrying in {wait}s (attempt {attempt + 1}/{retries + 1})", file=sys.stderr)
-                time.sleep(wait)
-                continue
-            print(f"  ↳ MiniMax API error: {last_error}", file=sys.stderr)
-            return titles, False
-        except (TimeoutError, URLError, OSError) as e:
-            last_error = f"{type(e).__name__}: {e}"
-            if attempt < retries:
-                wait = 1.0 * (attempt + 1)
-                print(f"  ↳ MiniMax API {last_error}, retrying in {wait}s", file=sys.stderr)
-                time.sleep(wait)
-                continue
-            print(f"  ↳ MiniMax API error after {retries + 1} attempts: {last_error}", file=sys.stderr)
-            return titles, False
-        except json.JSONDecodeError as e:
-            print(f"  ↳ MiniMax API returned invalid JSON: {e}", file=sys.stderr)
-            return titles, False
-
-        reply_text = _extract_minimax_text(body)
-        if not reply_text:
-            print("  ↳ MiniMax API returned empty response", file=sys.stderr)
-            return titles, False
-
-        translated = parse_translation_array(reply_text)
-        if translated is None:
-            print(f"  ↳ MiniMax API returned unparseable translation: {reply_text[:200]}", file=sys.stderr)
-            return titles, False
-        if len(translated) != len(titles):
-            print(f"  ↳ MiniMax API returned {len(translated)} items, expected {len(titles)}", file=sys.stderr)
-            return titles, False
-        return translated, True
-
-    print(f"  ↳ MiniMax API exhausted retries: {last_error}", file=sys.stderr)
-    return titles, False
-
-
-def translate_via_gemini_api(
-    titles: list[str],
-    deadline: float | None,
-) -> tuple[list[str], bool]:
-    """Translate headlines using Gemini API with retry on transient errors."""
-    if not titles:
-        return [], True
-
-    api_key = (os.getenv("GEMINI_API_KEY") or "").strip()
-    if not api_key:
-        return titles, False
-
-    prompt = _build_translation_prompt(titles)
-    payload = json.dumps(
-        {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"temperature": 0.2},
-        }
-    ).encode("utf-8")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-
-    retries = _GEMINI_MAX_RETRIES
-    last_error = None
-    for attempt in range(retries + 1):
-        req = urllib.request.Request(
-            url=url,
-            data=payload,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-        try:
-            timeout = clamp_timeout(15, deadline)
-            with urllib.request.urlopen(req, timeout=timeout) as response:
-                raw = response.read().decode("utf-8")
-            body = json.loads(raw)
-        except HTTPError as e:
-            last_error = f"HTTP {e.code}"
-            if e.code in (429, 500, 502, 503) and attempt < retries:
-                time.sleep(1.0 * (attempt + 1))
-                continue
-            return titles, False
-        except (TimeoutError, URLError, OSError):
-            if attempt < retries:
-                time.sleep(1.0 * (attempt + 1))
-                continue
-            return titles, False
-        except json.JSONDecodeError:
-            return titles, False
-
-        candidates = body.get("candidates", [])
-        if not candidates:
-            return titles, False
-        content = candidates[0].get("content", {})
-        parts = content.get("parts", [])
-        if not parts:
-            return titles, False
-        text = "\n".join([part.get("text", "") for part in parts if isinstance(part, dict)]).strip()
-        if not text:
-            return titles, False
-
-        translated = parse_translation_array(text)
-        if translated is None or len(translated) != len(titles):
-            return titles, False
-        return translated, True
-
-    print(f"  ↳ Gemini API exhausted retries: {last_error}", file=sys.stderr)
-    return titles, False
-
-
-def translate_headline_items(headlines: list[dict], deadline: float | None) -> bool:
-    if not headlines:
-        return False
-
-    titles = []
-    for item in headlines:
-        title = (item.get("title") or "").strip()
-        if title and not item.get("title_de"):
-            titles.append(title)
-
-    if not titles:
-        return True
-
-    unique_titles = list(dict.fromkeys(titles))
-    translated, success = translate_headlines(unique_titles, deadline=deadline)
-    if not success:
-        return False
-
-    mapping = {orig: trans for orig, trans in zip(unique_titles, translated)}
-    for item in headlines:
-        title = (item.get("title") or "").strip()
-        if title in mapping:
-            item["title_de"] = mapping[title]
-    return True
-
-
 def summarize_with_openclaw(
     content: str,
-    language: str = "de",
     style: str = "briefing",
     deadline: float | None = None,
 ) -> str:
     """Generate AI summary via OpenClaw agent."""
     prompt = f"""{STYLE_PROMPTS.get(style, STYLE_PROMPTS['briefing'])}
-
-{LANG_PROMPTS.get(language, LANG_PROMPTS['de'])}
 
 Use only the following information for the briefing:
 
@@ -1204,7 +922,7 @@ Use only the following information for the briefing:
     if result.returncode == 0:
         reply = extract_agent_reply(result.stdout)
         # Add financial disclaimer
-        reply += format_disclaimer(language)
+        reply += format_disclaimer()
         return reply
 
     stderr = result.stderr.strip() or "unknown error"
@@ -1227,8 +945,8 @@ def format_market_data(market_data: dict) -> str:
     return '\n'.join(lines)
 
 
-def format_headlines(headlines: list, language: str = "en") -> str:
-    """Format headlines for the prompt. Uses title_de when available for German."""
+def format_headlines(headlines: list) -> str:
+    """Format headlines for the prompt."""
     lines = ["## Headlines\n"]
 
     for article in headlines[:MAX_HEADLINES_IN_PROMPT]:
@@ -1239,10 +957,7 @@ def format_headlines(headlines: list, language: str = "en") -> str:
                 source = ", ".join(sorted(sources))
             else:
                 source = "Unknown"
-        # Use translated title for German if available
         title = article.get('title', '')
-        if language == "de" and article.get('title_de'):
-            title = article.get('title_de')
         link = article.get('link', '')
         if not link:
             links = article.get('links')
@@ -1326,7 +1041,7 @@ def format_portfolio_news(portfolio_data: dict) -> str:
         # Format entry
         entry = [f"#### {display_symbol} (${price}, {change_pct:+.2f}%){indicator_str}"]
         for article in articles[:3]:
-            title = article.get("title_de") or article.get("title", "")
+            title = article.get("title", "")
             link = article.get("link", "")
             if link:
                 entry.append(f"- {title} | {link}")
@@ -1412,10 +1127,8 @@ def classify_sentiment(market_data: dict, portfolio_data: dict | None = None) ->
 def build_portfolio_message(
     portfolio_data: dict,
     labels: dict,
-    language: str,
-    deadline: float | None = None,
 ) -> str:
-    """Build a portfolio movers message with translated titles and source refs."""
+    """Build a portfolio movers message with source refs."""
     if not portfolio_data:
         return ""
 
@@ -1429,7 +1142,6 @@ def build_portfolio_message(
     portfolio_header = labels.get("heading_portfolio_movers", "Portfolio Movers")
 
     stocks = []
-    all_articles = []
     for symbol, data in stocks_raw.items():
         quote = data.get("quote", {})
         change = quote.get("change_percent", 0) or 0
@@ -1445,25 +1157,7 @@ def build_portfolio_message(
                 "articles": articles,
             }
         )
-        all_articles.extend(articles)
-
     stocks.sort(key=lambda x: x["change"], reverse=True)
-
-    title_translations: dict[str, str] = {}
-    if language == "de" and all_articles:
-        titles_to_translate = []
-        for art in all_articles:
-            if art.get("title_de"):
-                continue
-            title = (art.get("title") or "").strip()
-            if title:
-                titles_to_translate.append(title)
-        titles_to_translate = list(dict.fromkeys(titles_to_translate))
-        if titles_to_translate:
-            translated, success = translate_headlines(titles_to_translate, deadline=deadline)
-            if success:
-                for orig, trans in zip(titles_to_translate, translated):
-                    title_translations[orig] = trans
 
     header_line = f"📊 **{portfolio_header}**"
     if isinstance(total_stocks, int) and total_stocks > len(stocks):
@@ -1483,14 +1177,13 @@ def build_portfolio_message(
             title = (art.get("title") or "").strip()
             if not title:
                 continue
-            display_title = art.get("title_de") or title_translations.get(title, title)
             link = (art.get("link") or "").strip()
             if link:
-                lines.append(f"• {display_title} [{ref_idx}]")
+                lines.append(f"• {title} [{ref_idx}]")
                 portfolio_sources.append({"idx": ref_idx, "link": link})
                 ref_idx += 1
             else:
-                lines.append(f"• {display_title}")
+                lines.append(f"• {title}")
 
     if portfolio_sources:
         sources_header = labels.get("sources_header", "Sources")
@@ -1507,7 +1200,6 @@ def build_briefing_summary(
     movers: list[dict] | None,
     top_headlines: list[dict] | None,
     labels: dict,
-    language: str,
 ) -> str:
     sentiment_data = classify_sentiment(market_data, portfolio_data)
     sentiment = sentiment_data["sentiment"]
@@ -1535,24 +1227,14 @@ def build_briefing_summary(
     # Build sentiment explanation
     sentiment_explanation = ""
     if sentiment in ("Bullish", "Bearish", "Neutral") and (top_gainers or top_losers):
-        if language == "de":
-            if sentiment == "Bearish" and top_losers:
-                losers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_losers[:3])
-                sentiment_explanation = f"Durchschnitt {avg_change:+.1f}% — Verlierer: {losers_str}"
-            elif sentiment == "Bullish" and top_gainers:
-                gainers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_gainers[:3])
-                sentiment_explanation = f"Durchschnitt {avg_change:+.1f}% — Gewinner: {gainers_str}"
-            else:
-                sentiment_explanation = f"Durchschnitt {avg_change:+.1f}%"
+        if sentiment == "Bearish" and top_losers:
+            losers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_losers[:3])
+            sentiment_explanation = f"Avg {avg_change:+.1f}% — Losers: {losers_str}"
+        elif sentiment == "Bullish" and top_gainers:
+            gainers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_gainers[:3])
+            sentiment_explanation = f"Avg {avg_change:+.1f}% — Gainers: {gainers_str}"
         else:
-            if sentiment == "Bearish" and top_losers:
-                losers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_losers[:3])
-                sentiment_explanation = f"Avg {avg_change:+.1f}% — Losers: {losers_str}"
-            elif sentiment == "Bullish" and top_gainers:
-                gainers_str = ", ".join(f"{s['symbol']} {s['change']:+.1f}%" for s in top_gainers[:3])
-                sentiment_explanation = f"Avg {avg_change:+.1f}% — Gainers: {gainers_str}"
-            else:
-                sentiment_explanation = f"Avg {avg_change:+.1f}%"
+            sentiment_explanation = f"Avg {avg_change:+.1f}%"
 
     lines = [f"## {heading_briefing}", ""]
 
@@ -1587,8 +1269,7 @@ def build_briefing_summary(
     if headlines:
         for idx, article in enumerate(headlines[:TOP_HEADLINES_COUNT], start=1):
             source = article.get("source", "Unknown")
-            title = article.get("title_de") if language == "de" else None
-            title = title or article.get("title", "")
+            title = article.get("title", "")
             title = title.strip()
             pub_time = article.get("published_at")
             age = time_ago(pub_time) if isinstance(pub_time, (int, float)) and pub_time else ""
@@ -1623,7 +1304,7 @@ def build_briefing_summary(
         portfolio_meta=portfolio_meta,
         index_change=index_change,
     )
-    watchpoints_text = format_watchpoints(watchpoints_data, language, labels)
+    watchpoints_text = format_watchpoints(watchpoints_data, labels)
     lines.append(watchpoints_text)
 
     return "\n".join(lines)
@@ -1660,10 +1341,8 @@ def validate_briefing_structure(summary: str, labels: dict) -> tuple[bool, list[
 def generate_briefing(args):
     """Generate full market briefing."""
     config = load_config()
-    translations = load_translations(config)
-    language = args.lang or config['language']['default']
     briefing_time = infer_briefing_time()
-    labels = translations.get(language, translations.get("en", {}))
+    labels = ENGLISH_LABELS
     fast_mode = args.fast or os.environ.get("VFINANCE_NEWS_FAST") == "1"
     env_deadline = os.environ.get("VFINANCE_NEWS_DEADLINE_SEC")
     try:
@@ -1691,7 +1370,6 @@ def generate_briefing(args):
         headline_limit,
         regions=["us", "europe", "japan"],
         max_indices_per_region=1 if fast_mode else 2,
-        language=language,
         deadline=deadline,
         rss_timeout=rss_timeout,
         subprocess_timeout=subprocess_timeout,
@@ -1701,20 +1379,16 @@ def generate_briefing(args):
     # Model selection is now handled by the openclaw gateway (configured in openclaw.json)
     # Environment variables for model override are deprecated
 
-    shortlist_by_lang = config.get("headline_shortlist_size_by_lang", {})
-    shortlist_size = HEADLINE_SHORTLIST_SIZE
-    if isinstance(shortlist_by_lang, dict):
-        lang_size = shortlist_by_lang.get(language)
-        if isinstance(lang_size, int) and lang_size > 0:
-            shortlist_size = lang_size
+    shortlist_size = config.get("headline_shortlist_size", HEADLINE_SHORTLIST_SIZE)
+    if not isinstance(shortlist_size, int) or shortlist_size <= 0:
+        shortlist_size = HEADLINE_SHORTLIST_SIZE
     headline_deadline = deadline
     remaining = time_left(deadline)
     if remaining is not None and remaining < 12:
         headline_deadline = compute_deadline(12)
     # Select top headlines (model selection handled by gateway)
-    top_headlines, headline_shortlist, headline_model_used, translation_model_used = select_top_headlines(
+    top_headlines, headline_shortlist, headline_model_used = select_top_headlines(
         market_data.get("headlines", []),
-        language=language,
         deadline=headline_deadline,
         shortlist_size=shortlist_size,
     )
@@ -1752,7 +1426,7 @@ def generate_briefing(args):
     if market_data:
         content_parts.append(format_market_data(market_data))
         if headline_shortlist:
-            content_parts.append(format_headlines(headline_shortlist, language=language))
+            content_parts.append(format_headlines(headline_shortlist))
             content_parts.append(format_sources(top_headlines, labels))
 
     # Only include portfolio if fetch succeeded (no error key)
@@ -1768,7 +1442,6 @@ def generate_briefing(args):
             "selected_headlines": top_headlines,
             "headline_shortlist": headline_shortlist,
             "headline_model_used": headline_model_used,
-            "translation_model_used": translation_model_used,
         })
 
     def write_debug_once(extra: dict | None = None) -> None:
@@ -1822,7 +1495,7 @@ def generate_briefing(args):
     summary_model_used = "deterministic"
     if args.llm and remaining is not None and remaining <= 0:
         print("⚠️ Deadline exceeded; using deterministic summary", file=sys.stderr)
-        summary = build_briefing_summary(market_data, portfolio_data, movers, top_headlines, labels, language)
+        summary = build_briefing_summary(market_data, portfolio_data, movers, top_headlines, labels)
         summary_mode = "deterministic"
         summary_model_used = "deterministic_deadline_fallback"
         if args.debug:
@@ -1831,7 +1504,7 @@ def generate_briefing(args):
                 "summary_model_attempts": summary_attempts,
             })
     elif args.style == "briefing" and not args.llm:
-        summary = build_briefing_summary(market_data, portfolio_data, movers, top_headlines, labels, language)
+        summary = build_briefing_summary(market_data, portfolio_data, movers, top_headlines, labels)
         summary_mode = "deterministic"
         summary_model_used = "deterministic"
         if args.debug:
@@ -1842,7 +1515,7 @@ def generate_briefing(args):
     else:
         print("🤖 Generating AI summary via OpenClaw", file=sys.stderr)
         summary_mode = "llm"
-        summary = summarize_with_openclaw(content, language, args.style, deadline=deadline)
+        summary = summarize_with_openclaw(content, args.style, deadline=deadline)
         if summary.startswith("⚠️"):
             print(summary, file=sys.stderr)
             summary_model_used = "llm_failed"
@@ -1864,14 +1537,7 @@ def generate_briefing(args):
     now = datetime.now()
     time_str = now.strftime("%H:%M")
     
-    date_str = now.strftime("%A, %d. %B %Y")
-    if language == "de":
-        months = labels.get("months", {})
-        days = labels.get("days", {})
-        for en, de in months.items():
-            date_str = date_str.replace(en, de)
-        for en, de in days.items():
-            date_str = date_str.replace(en, de)
+    date_str = now.strftime("%A, %d %B %Y")
 
     if briefing_time == "morning":
         emoji = "🌅"
@@ -1902,7 +1568,7 @@ def generate_briefing(args):
     # Message 2: Portfolio (if available)
     portfolio_output = ""
     if portfolio_data:
-        portfolio_output = build_portfolio_message(portfolio_data, labels, language, deadline=deadline)
+        portfolio_output = build_portfolio_message(portfolio_data, labels)
         
     write_debug_once()
 
@@ -1911,7 +1577,6 @@ def generate_briefing(args):
             'title': f"{prefix} {title}",
             'date': date_str,
             'time': time_str,
-            'language': language,
             'summary': summary,
             'summary_mode': summary_mode,
             'summary_model_used': summary_model_used,
@@ -1944,7 +1609,6 @@ def generate_briefing(args):
 
 def main():
     parser = argparse.ArgumentParser(description='News Summarizer')
-    parser.add_argument('--lang', choices=['de', 'en'], help='Output language')
     parser.add_argument('--style', choices=['briefing', 'analysis', 'headlines'],
                         default='briefing', help='Summary style')
     parser.add_argument('--json', action='store_true', help='Output as JSON')

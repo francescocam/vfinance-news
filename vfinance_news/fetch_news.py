@@ -433,7 +433,6 @@ def get_market_news(
     limit: int = 5,
     regions: list[str] | None = None,
     max_indices_per_region: int | None = None,
-    language: str | None = None,
     deadline: float | None = None,
     rss_timeout: int = 15,
     subprocess_timeout: int = 30,
@@ -443,11 +442,6 @@ def get_market_news(
     sources = load_sources()
     source_weights = sources.get("source_weights", DEFAULT_SOURCE_WEIGHTS)
     headline_sources = sources.get("headline_sources", DEFAULT_HEADLINE_SOURCES)
-    sources_by_lang = sources.get("headline_sources_by_lang", {})
-    if language and isinstance(sources_by_lang, dict):
-        lang_sources = sources_by_lang.get(language)
-        if isinstance(lang_sources, list) and lang_sources:
-            headline_sources = lang_sources
     headline_exclude = set(sources.get("headline_exclude", []))
     
     result = {

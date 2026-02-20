@@ -420,37 +420,21 @@ def check_earnings(args):
         print(json.dumps(result, indent=2))
         return
 
-    # Translations
-    lang = getattr(args, 'lang', 'en')
-    if lang == "de":
-        labels = {
-            "today": "EARNINGS HEUTE",
-            "week": "EARNINGS DIESE WOCHE",
-            "week_preview": "EARNINGS NÄCHSTE WOCHE",
-            "pre": "vor Börseneröffnung",
-            "post": "nach Börsenschluss",
-            "pre_short": "vor",
-            "post_short": "nach",
-            "est": "Erw",
-            "none": "Keine Earnings diese Woche",
-            "none_week": "Keine Earnings nächste Woche",
-        }
-    else:
-        labels = {
-            "today": "EARNINGS TODAY",
-            "week": "EARNINGS THIS WEEK",
-            "week_preview": "EARNINGS NEXT WEEK",
-            "pre": "pre-market",
-            "post": "after-close",
-            "pre_short": "pre",
-            "post_short": "post",
-            "est": "Est",
-            "none": "No earnings this week",
-            "none_week": "No earnings next week",
-        }
+    labels = {
+        "today": "EARNINGS TODAY",
+        "week": "EARNINGS THIS WEEK",
+        "week_preview": "EARNINGS NEXT WEEK",
+        "pre": "pre-market",
+        "post": "after-close",
+        "pre_short": "pre",
+        "post_short": "post",
+        "est": "Est",
+        "none": "No earnings this week",
+        "none_week": "No earnings next week",
+    }
 
     # Date header
-    date_str = datetime.now().strftime("%b %d, %Y") if lang == "en" else datetime.now().strftime("%d. %b %Y")
+    date_str = datetime.now().strftime("%b %d, %Y")
 
     # Output for briefing
     output = []
@@ -516,7 +500,6 @@ def main():
     check_parser = subparsers.add_parser("check", help="Check today/this week")
     check_parser.add_argument("--verbose", "-v", action="store_true")
     check_parser.add_argument("--json", action="store_true", help="JSON output")
-    check_parser.add_argument("--lang", default="en", help="Output language (en, de)")
     check_parser.add_argument("--week", action="store_true", help="Show full week preview (for weekly cron)")
     check_parser.set_defaults(func=check_earnings)
     

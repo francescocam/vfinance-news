@@ -40,7 +40,10 @@ def test_vfinance_news_portfolio_add_routes_to_portfolio_manager(monkeypatch):
     def fake_portfolio_main():
         captured["argv"] = list(sys.argv)
 
-    monkeypatch.setitem(sys.modules, "vfinance_news.portfolio", types.SimpleNamespace(main=fake_portfolio_main))
+    fake_module = types.SimpleNamespace(main=fake_portfolio_main)
+    monkeypatch.setitem(sys.modules, "vfinance_news.portfolio", fake_module)
+    import vfinance_news
+    monkeypatch.setattr(vfinance_news, "portfolio", fake_module, raising=False)
     monkeypatch.setattr("sys.argv", ["vfinance-news", "portfolio", "add", "CSU.TO"])
 
     cli.main()

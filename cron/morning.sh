@@ -13,6 +13,6 @@ export VFINANCE_NEWS_CHANNEL="${VFINANCE_NEWS_CHANNEL:?VFINANCE_NEWS_CHANNEL mus
 echo "[$(date)] Starting morning briefing via Lobster..."
 
 lobster run --file "$SKILL_DIR/workflows/briefing-cron.yaml" \
-  --args-json '{"time":"morning","lang":"de"}'
+  --args-json '{"fast":"false"}'
 
 echo "[$(date)] Morning briefing complete."

@@ -71,7 +71,6 @@ Forwarded options (implemented in `vfinance_news/briefing.py`):
 | Option | Description |
 |---|---|
 | `--style {briefing,analysis,headlines}` | Summary style |
-| `--lang {en,de}` | Output language |
 | `--json` | Output JSON |
 | `--deadline <seconds>` | Global timeout/deadline |
 | `--llm` | Enable LLM-generated summary |
@@ -83,7 +82,7 @@ Model/provider selection for summary generation is handled by OpenClaw gateway c
 Examples:
 
 ```bash
-vfinance-news briefing --lang de
+vfinance-news briefing
 vfinance-news briefing --style analysis --llm
 ```
 
@@ -247,7 +246,7 @@ Subcommands:
 | `delete` | `vfinance-news alerts delete <ticker>` |
 | `snooze` | `vfinance-news alerts snooze <ticker> [--days <int>]` |
 | `update` | `vfinance-news alerts update <ticker> <target> [--note <text>]` |
-| `check` | `vfinance-news alerts check [--json] [--lang <en|de>]` |
+| `check` | `vfinance-news alerts check [--json]` |
 
 Examples:
 
@@ -255,7 +254,7 @@ Examples:
 vfinance-news alerts set CRWD 400 --note "Buy zone" --currency USD
 vfinance-news alerts update CRWD 420 --note "Raised target"
 vfinance-news alerts snooze CRWD --days 14
-vfinance-news alerts check --lang de
+vfinance-news alerts check
 ```
 
 ## `earnings`
@@ -271,14 +270,14 @@ Subcommands:
 | Subcommand | Usage |
 |---|---|
 | `list` | `vfinance-news earnings list [--refresh|-r]` |
-| `check` | `vfinance-news earnings check [--verbose|-v] [--json] [--lang <en|de>] [--week]` |
+| `check` | `vfinance-news earnings check [--verbose|-v] [--json] [--week]` |
 | `refresh` | `vfinance-news earnings refresh` |
 
 Examples:
 
 ```bash
 vfinance-news earnings list --refresh
-vfinance-news earnings check --week --lang en
+vfinance-news earnings check --week
 vfinance-news earnings refresh
 ```
 
@@ -297,7 +296,7 @@ vfinance-news setup
 Underlying setup module supports:
 
 ```text
-wizard [--reset] [--section {feeds,markets,language,schedule}]
+wizard [--reset] [--section {feeds,markets,schedule}]
 ```
 
 ### `config`
@@ -324,7 +323,7 @@ show
 
 | File | Purpose |
 |---|---|
-| `config/config.json` | Main source/market/language configuration |
+| `config/config.json` | Main source/market configuration |
 | `config/portfolio.csv` | Portfolio/watchlist records |
 | `config/alerts.json` | Stored alert definitions |
 | `cache/earnings_cache.json` | Earnings cache data |

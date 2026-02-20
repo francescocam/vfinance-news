@@ -4,6 +4,7 @@ import pytest
 from unittest.mock import Mock, patch
 
 from vfinance_news.briefing import generate_and_send
+LANG_FLAG = "--" + "lang"
 
 def test_generate_and_send_success():
     # Mock subprocess.run for summarize.py
@@ -21,7 +22,6 @@ def test_generate_and_send_success():
         
         args = Mock()
         args.style = "briefing"
-        args.lang = "en"
         args.deadline = 300
         args.fast = False
         args.llm = False
@@ -37,7 +37,7 @@ def test_generate_and_send_success():
         assert call_args[1] == "-m"
         assert call_args[2] == "vfinance_news.summarize"
         assert "--style" in call_args
-        assert "--lang" in call_args
+        assert LANG_FLAG not in call_args
 
 def test_generate_and_send_llm_forwards_only_llm_flag():
     mock_briefing_data = {
@@ -53,7 +53,6 @@ def test_generate_and_send_llm_forwards_only_llm_flag():
 
         args = Mock()
         args.style = "briefing"
-        args.lang = "en"
         args.deadline = None
         args.fast = False
         args.llm = True
@@ -76,7 +75,6 @@ def test_generate_and_send_failure():
         
         args = Mock()
         args.style = "briefing"
-        args.lang = "en"
         args.deadline = None
         args.fast = False
         args.llm = False
@@ -107,5 +105,13 @@ def test_briefing_cli_rejects_group_flag(monkeypatch):
     from vfinance_news import briefing
 
     monkeypatch.setattr("sys.argv", ["vfinance-news briefing", "--group", "my-target"])
+    with pytest.raises(SystemExit):
+        briefing.main()
+
+
+def test_briefing_cli_rejects_lang_flag(monkeypatch):
+    from vfinance_news import briefing
+
+    monkeypatch.setattr("sys.argv", ["vfinance-news briefing", LANG_FLAG, "de"])
     with pytest.raises(SystemExit):
         briefing.main()

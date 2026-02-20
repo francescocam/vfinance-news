@@ -327,31 +327,18 @@ def cmd_check(args) -> None:
         print(json.dumps({"triggered": triggered, "watching": watching}, indent=2))
         return
 
-    # Translations
-    lang = getattr(args, 'lang', 'en')
-    if lang == "de":
-        labels = {
-            "title": "PREISWARNUNGEN",
-            "in_zone": "IN KAUFZONE",
-            "buy": "KAUFEN!",
-            "target": "Ziel",
-            "watching": "BEOBACHTUNG",
-            "to_target": "noch",
-            "no_data": "Keine Preisdaten für Alerts verfügbar",
-        }
-    else:
-        labels = {
-            "title": "PRICE ALERTS",
-            "in_zone": "IN BUY ZONE",
-            "buy": "BUY SIGNAL",
-            "target": "target",
-            "watching": "WATCHING",
-            "to_target": "to target",
-            "no_data": "No price data available for alerts",
-        }
+    labels = {
+        "title": "PRICE ALERTS",
+        "in_zone": "IN BUY ZONE",
+        "buy": "BUY SIGNAL",
+        "target": "target",
+        "watching": "WATCHING",
+        "to_target": "to target",
+        "no_data": "No price data available for alerts",
+    }
 
     # Date header
-    date_str = datetime.now().strftime("%b %d, %Y") if lang == "en" else datetime.now().strftime("%d. %b %Y")
+    date_str = datetime.now().strftime("%b %d, %Y")
     print(f"📊 {labels['title']} — {date_str}\n")
 
     # Human-readable output
@@ -478,7 +465,6 @@ def main():
     # check
     check_parser = subparsers.add_parser("check", help="Check alerts against prices")
     check_parser.add_argument("--json", action="store_true", help="JSON output")
-    check_parser.add_argument("--lang", default="en", help="Output language (en, de)")
     
     args = parser.parse_args()
     

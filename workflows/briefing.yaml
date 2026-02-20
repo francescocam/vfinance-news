@@ -1,5 +1,5 @@
 # Finance Briefing Workflow for Lobster
-# Usage: lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"lang\":\"de\"}'"
+# Usage: lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"fast\":\"false\"}'"
 #
 # This workflow:
 # 1. Generates a market briefing via local .venv CLI
@@ -10,9 +10,6 @@ name: vfinance.briefing
 description: Generate market briefing with approval gate
 
 args:
-  lang:
-    default: de
-    description: "Language: en or de"
   fast:
     default: "false"
     description: "Use fast mode: true or false"
@@ -32,25 +29,11 @@ steps:
       fi
       "$VFINANCE_NEWS_BIN" briefing \
         --style briefing \
-        --lang "${lang}" \
         --json \
         $FAST_FLAG > "$OUTFILE"
       # Output the file path for subsequent steps
       echo "$OUTFILE"
     description: Generate briefing via local .venv CLI
-
-  # Translate portfolio headlines (if German)
-  - id: translate
-    command: |
-      OUTFILE=$(cat)
-      OUTFILE=$(echo "$OUTFILE" | tr -d '\n')
-      SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
-      if [ "${lang}" = "de" ]; then
-        "$SKILL_DIR/.venv/bin/python" -m vfinance_news.translate_portfolio "$OUTFILE" --lang de || true
-      fi
-      echo "$OUTFILE"
-    stdin: $generate.stdout
-    description: Translate portfolio headlines via openclaw
 
   # Validate deterministic structured macro output before approval
   - id: validate
@@ -67,7 +50,7 @@ steps:
       fi
 
       echo "$OUTFILE"
-    stdin: $translate.stdout
+    stdin: $generate.stdout
     description: Validate deterministic structured output
 
   # Approval gate - workflow halts here until user approves

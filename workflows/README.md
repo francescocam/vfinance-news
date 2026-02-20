@@ -14,13 +14,12 @@ Generates a market briefing with an approval gate.
 lobster "workflows.run --file ~/projects/vfinance-news-openclaw-skill/workflows/briefing.yaml"
 
 # With custom args
-lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"lang\":\"en\"}'"
+lobster "workflows.run --file workflows/briefing.yaml --args-json '{\"fast\":\"true\"}'"
 ```
 
 **Arguments:**
 | Arg | Default | Description |
 |-----|---------|-------------|
-| `lang` | `de` | Language: `en` or `de` |
 | `fast` | `false` | Use fast mode (shorter timeouts) |
 
 **Examples:**
@@ -51,12 +50,11 @@ export const workflowRegistry = {
     argsSchema: {
       type: 'object',
       properties: {
-        lang: { type: 'string', enum: ['en', 'de'], default: 'de' },
         fast: { type: 'boolean', default: false },
       },
     },
     examples: [
-      { args: { lang: 'de' }, description: 'German briefing' },
+      { args: { fast: false }, description: 'Default briefing' },
     ],
     sideEffects: [],
   },

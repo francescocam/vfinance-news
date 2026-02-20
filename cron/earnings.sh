@@ -14,6 +14,6 @@ export VFINANCE_NEWS_CHANNEL="${VFINANCE_NEWS_CHANNEL:?VFINANCE_NEWS_CHANNEL mus
 echo "[$(date)] Checking today's earnings via Lobster..."
 
 lobster run --file "$SKILL_DIR/workflows/earnings-cron.yaml" \
-  --args-json '{"lang":"en"}'
+  --args-json '{}'
 
 echo "[$(date)] Earnings alert complete."

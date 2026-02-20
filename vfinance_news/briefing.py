@@ -26,7 +26,6 @@ def generate_and_send(args):
     cmd = [
         sys.executable, '-m', 'vfinance_news.summarize',
         '--style', args.style,
-        '--lang', args.lang
     ]
 
     if args.deadline is not None:
@@ -88,8 +87,6 @@ def main():
     parser = argparse.ArgumentParser(description='Briefing Generator')
     parser.add_argument('--style', choices=['briefing', 'analysis', 'headlines'],
                         default='briefing', help='Summary style')
-    parser.add_argument('--lang', choices=['en', 'de'], default='en',
-                        help='Output language')
     parser.add_argument('--json', action='store_true',
                         help='Output as JSON')
     parser.add_argument('--deadline', type=int, default=None,

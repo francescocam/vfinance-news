@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Finance News Skill - Interactive Setup
-Configures RSS feeds, language, markets, and cron jobs.
+Configures RSS feeds, markets, and cron jobs.
 """
 
 import argparse
@@ -91,18 +91,6 @@ def setup_markets(sources: dict):
         sources['markets'][market_id]['enabled'] = enabled
 
 
-def setup_language(sources: dict):
-    """Interactive language configuration."""
-    print("\n🌐 Language Settings\n")
-    
-    current_lang = sources['language'].get('default', 'de')
-    lang = prompt("Default language (de/en)", current_lang)
-    if lang in sources['language']['supported']:
-        sources['language']['default'] = lang
-    else:
-        print(f"  ⚠️ Unsupported language '{lang}', keeping '{current_lang}'")
-
-
 def setup_schedule(sources: dict):
     """Interactive schedule configuration."""
     print("\n⏰ Briefing Schedule\n")
@@ -181,9 +169,6 @@ def run_setup(args):
     if not args.section or args.section == 'markets':
         setup_markets(sources)
     
-    if not args.section or args.section == 'language':
-        setup_language(sources)
-    
     if not args.section or args.section == 'schedule':
         setup_schedule(sources)
     
@@ -219,7 +204,7 @@ def main():
     # Setup command (default)
     setup_parser = subparsers.add_parser('wizard', help='Run setup wizard')
     setup_parser.add_argument('--reset', action='store_true', help='Reset to defaults')
-    setup_parser.add_argument('--section', choices=['feeds', 'markets', 'language', 'schedule'],
+    setup_parser.add_argument('--section', choices=['feeds', 'markets', 'schedule'],
                               help='Configure specific section only')
     setup_parser.set_defaults(func=run_setup)
     

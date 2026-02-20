@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 import json
 from unittest.mock import patch
-from vfinance_news.setup import load_sources, save_sources, get_default_sources, setup_language, setup_markets
+from vfinance_news.setup import load_sources, save_sources, get_default_sources, setup_markets
 
 
 def test_load_sources_missing_file(tmp_path, monkeypatch):
@@ -58,19 +58,6 @@ def test_get_default_sources():
                for k in feeds.keys())
 
 
-@patch("vfinance_news.setup.prompt", side_effect=["en"])
-@patch("vfinance_news.setup.save_sources")
-def test_setup_language(mock_save, mock_prompt):
-    """Test language setup function."""
-    sources = {"language": {"supported": ["en", "de"], "default": "de"}}
-    setup_language(sources)
-    
-    # Should have called prompt
-    mock_prompt.assert_called()
-    # Language should be updated
-    assert sources["language"]["default"] == "en"
-
-
 @patch("vfinance_news.setup.prompt_bool", side_effect=[True, False])
 @patch("vfinance_news.setup.save_sources")
 def test_setup_markets(mock_save, mock_prompt):
@@ -80,3 +67,11 @@ def test_setup_markets(mock_save, mock_prompt):
     
     # Should have prompted (at least once for US)
     assert mock_prompt.called
+
+
+def test_setup_cli_rejects_language_section(monkeypatch):
+    from vfinance_news import setup
+
+    monkeypatch.setattr("sys.argv", ["vfinance-news setup", "wizard", "--section", "language"])
+    with pytest.raises(SystemExit):
+        setup.main()

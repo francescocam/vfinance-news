@@ -1,5 +1,5 @@
 # Earnings Alert Workflow for Cron (No Approval Gate)
-# Usage: lobster run --file workflows/earnings-cron.yaml --args-json '{"lang":"en"}'
+# Usage: lobster run --file workflows/earnings-cron.yaml
 #
 # Schedule: 6:00 AM PT / 9:00 AM ET (30 min before market open)
 # Prints today's earnings calendar summary
@@ -7,17 +7,12 @@
 name: vfinance.earnings.cron
 description: Check earnings alerts for today's reports
 
-args:
-  lang:
-    default: en
-    description: "Language: en or de"
-
 steps:
   # Check earnings calendar for today and this week
   - id: check_earnings
     command: |
       SKILL_DIR="${SKILL_DIR:-$HOME/projects/skills/personal/vfinance-news}"
-      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check --lang "${lang}"
+      "$SKILL_DIR/.venv/bin/python" -m vfinance_news.earnings check
     description: Get today's earnings calendar
 
   # Print earnings alert if there's content
@@ -26,7 +21,7 @@ steps:
       MSG=$(cat)
       MSG=$(echo "$MSG" | tr -d '\r')
       # Only print if there are actual earnings today
-      if echo "$MSG" | grep -q "EARNINGS TODAY\|EARNINGS HEUTE"; then
+      if echo "$MSG" | grep -q "EARNINGS TODAY"; then
         echo "$MSG"
       else
         echo "No earnings today"

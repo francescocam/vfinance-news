@@ -12,6 +12,7 @@ from vfinance_news.earnings import (
     save_earnings_cache,
     refresh_earnings
 )
+LANG_FLAG = "--" + "lang"
 
 @pytest.fixture
 def mock_finnhub_response():
@@ -106,3 +107,11 @@ def test_refresh_earnings_force(mock_finnhub_response):
         assert mock_save.called
         args, _ = mock_save.call_args
         assert "AAPL" in args[0]["earnings"]
+
+
+def test_earnings_cli_rejects_lang_flag(monkeypatch):
+    from vfinance_news import earnings
+
+    monkeypatch.setattr("sys.argv", ["vfinance-news earnings", "check", LANG_FLAG, "de"])
+    with pytest.raises(SystemExit):
+        earnings.main()
