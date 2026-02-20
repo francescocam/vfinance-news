@@ -337,6 +337,56 @@ def write_debug_log(args, market_data: dict, portfolio_data: dict | None, briefi
 
 
 def extract_agent_reply(raw: str) -> str:
+    def extract_text(obj) -> str | None:
+        if isinstance(obj, str):
+            text = obj.strip()
+            return text or None
+
+        if isinstance(obj, list):
+            for item in obj:
+                found = extract_text(item)
+                if found:
+                    return found
+            return None
+
+        if not isinstance(obj, dict):
+            return None
+
+        for key in ("reply", "message", "text", "output"):
+            found = extract_text(obj.get(key))
+            if found:
+                return found
+
+        content = obj.get("content")
+        if isinstance(content, list):
+            for item in content:
+                found = extract_text(item)
+                if found:
+                    return found
+        else:
+            found = extract_text(content)
+            if found:
+                return found
+
+        messages = obj.get("messages")
+        if isinstance(messages, list):
+            found = extract_text(messages)
+            if found:
+                return found
+
+        payloads = obj.get("payloads")
+        if isinstance(payloads, list):
+            found = extract_text(payloads)
+            if found:
+                return found
+
+        result_obj = obj.get("result")
+        found = extract_text(result_obj)
+        if found:
+            return found
+
+        return None
+
     data = None
     try:
         data = json.loads(raw)
@@ -351,18 +401,9 @@ def extract_agent_reply(raw: str) -> str:
             except json.JSONDecodeError:
                 continue
 
-    if isinstance(data, dict):
-        for key in ("reply", "message", "text", "output", "result"):
-            if key in data and isinstance(data[key], str):
-                return data[key].strip()
-        if "messages" in data:
-            messages = data.get("messages", [])
-            if messages:
-                last = messages[-1]
-                if isinstance(last, dict):
-                    text = last.get("text") or last.get("message")
-                    if isinstance(text, str):
-                        return text.strip()
+    extracted = extract_text(data)
+    if extracted:
+        return extracted
 
     return raw.strip()
 

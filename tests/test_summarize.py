@@ -213,6 +213,28 @@ def test_generate_briefing_llm_uses_openclaw(capsys, monkeypatch):
     assert output["summary_model_attempts"] == ["openclaw"]
 
 
+def test_extract_agent_reply_reads_nested_payload_text():
+    raw = json.dumps(
+        {
+            "runId": "abc",
+            "status": "ok",
+            "result": {
+                "payloads": [
+                    {
+                        "text": "## Market Analysis\n\nOnly briefing text should be returned.",
+                        "mediaUrl": None,
+                    }
+                ]
+            },
+        }
+    )
+
+    reply = summarize.extract_agent_reply(raw)
+    assert reply.startswith("## Market Analysis")
+    assert "runId" not in reply
+    assert "payloads" not in reply
+
+
 # --- Tests for watchpoints feature (Issue #92) ---
 
 

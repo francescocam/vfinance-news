@@ -12,7 +12,7 @@ AI-powered market news briefings.
 Run the interactive setup wizard to configure your sources and schedule:
 
 ```bash
-vfinance-news setup
+{baseDir}/.venv/bin/vfinance-news setup
 ```
 
 The wizard will guide you through:
@@ -22,26 +22,26 @@ The wizard will guide you through:
 
 You can also configure specific sections:
 ```bash
-vfinance-news setup --section feeds     # Just RSS feeds
-vfinance-news setup --section schedule  # Just cron schedule
-vfinance-news setup --reset             # Reset to defaults
-vfinance-news config                    # Show current config
+{baseDir}/.venv/bin/vfinance-news setup --section feeds     # Just RSS feeds
+{baseDir}/.venv/bin/vfinance-news setup --section schedule  # Just cron schedule
+{baseDir}/.venv/bin/vfinance-news setup --reset             # Reset to defaults
+{baseDir}/.venv/bin/vfinance-news config                    # Show current config
 ```
 
 ## Quick Start
 
 ```bash
 # Generate briefing
-vfinance-news briefing
+{baseDir}/.venv/bin/vfinance-news briefing
 
 # View market overview
-vfinance-news market
+{baseDir}/.venv/bin/vfinance-news market
 
 # Get news for your portfolio
-vfinance-news portfolio
+{baseDir}/.venv/bin/vfinance-news portfolio
 
 # Get news for specific stock
-vfinance-news news AAPL
+{baseDir}/.venv/bin/vfinance-news news AAPL
 ```
 
 ## Features
@@ -57,7 +57,7 @@ vfinance-news news AAPL
 - **Portfolio:** Ticker-specific news from Yahoo
 
 ### 🤖 AI Summaries
-- Gemini-powered analysis
+- LLM poweredanalysis
 - English-only output
 - Briefing styles: summary, analysis, headlines
 
@@ -70,55 +70,55 @@ vfinance-news news AAPL
 ### Briefing Generation
 
 ```bash
-# Briefing (English is default)
-vfinance-news briefing
+# Briefing
+{baseDir}/.venv/bin/vfinance-news briefing --llm
 
 # Analysis style (more detailed)
-vfinance-news briefing --style analysis
+{baseDir}/.venv/bin/vfinance-news briefing --style analysis --llm
 ```
 
 ### Market Data
 
 ```bash
 # Market overview (indices + top headlines)
-vfinance-news market
+{baseDir}/.venv/bin/vfinance-news market
 
 # JSON output for processing
-vfinance-news market --json
+{baseDir}/.venv/bin/vfinance-news market --json
 ```
 
 ### Portfolio Management
 
 ```bash
 # List portfolio
-vfinance-news portfolio list
+{baseDir}/.venv/bin/vfinance-news portfolio list
 
 # Add stock
-vfinance-news portfolio add NVDA --name "NVIDIA Corporation" --category Tech
+{baseDir}/.venv/bin/vfinance-news portfolio add NVDA --name "NVIDIA Corporation" --category Tech
 
 # Remove stock
-vfinance-news portfolio remove TSLA
+{baseDir}/.venv/bin/vfinance-news portfolio remove TSLA
 
 # Import from CSV
-vfinance-news portfolio import ~/my_stocks.csv
+{baseDir}/.venv/bin/vfinance-news portfolio import ~/my_stocks.csv
 
 # Interactive portfolio creation
-vfinance-news portfolio create
+{baseDir}/.venv/bin/vfinance-news portfolio create
 ```
 
 ### Ticker News
 
 ```bash
 # News for specific stock
-vfinance-news news AAPL
-vfinance-news news TSLA
+{baseDir}/.venv/bin/vfinance-news news AAPL
+{baseDir}/.venv/bin/vfinance-news news TSLA
 ```
 
 ## Configuration
 
 ### Portfolio CSV Format
 
-Location: `~/clawd/skills/vfinance-news/config/portfolio.csv`
+Location: `{baseDir}/config/portfolio.csv`
 
 ```csv
 symbol,name,category,notes
@@ -129,36 +129,10 @@ MSFT,Microsoft Corporation,Tech,
 
 ### Sources Configuration
 
-Location: `~/clawd/skills/vfinance-news/config/config.json` (legacy fallback: `config/sources.json`)
-
+Location: `{baseDir}/config/config.json`
+  
 - RSS feeds for WSJ, Barron's, CNBC, Yahoo
 - Market indices by region
-
-## Cron Jobs
-
-### Setup via OpenClaw
-
-```bash
-# Add morning briefing cron job
-openclaw cron add --schedule "30 6 * * 1-5" \
-  --timezone "America/Los_Angeles" \
-  --command "bash ~/clawd/skills/vfinance-news/cron/morning.sh"
-
-# Add evening briefing cron job
-openclaw cron add --schedule "0 13 * * 1-5" \
-  --timezone "America/Los_Angeles" \
-  --command "bash ~/clawd/skills/vfinance-news/cron/evening.sh"
-```
-
-### Manual Cron (crontab)
-
-```cron
-# Morning briefing (6:30 AM PT, weekdays)
-30 6 * * 1-5 bash ~/clawd/skills/vfinance-news/cron/morning.sh
-
-# Evening briefing (1:00 PM PT, weekdays)
-0 13 * * 1-5 bash ~/clawd/skills/vfinance-news/cron/evening.sh
-```
 
 ## Sample Output
 
@@ -226,15 +200,8 @@ skills/vfinance-news/
 
 - Python 3.10+
 - `feedparser` (`pip install feedparser`)
-- Gemini CLI (`brew install gemini-cli`)
 
 ## Troubleshooting
-
-### Gemini not working
-```bash
-# Authenticate Gemini
-gemini  # Follow login flow
-```
 
 ### RSS feeds timing out
 - Check network connectivity

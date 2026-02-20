@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Optional user config (edit these defaults if you want).
 DEFAULT_REMOTE_HOST="fcamisa@100.86.145.121"
-DEFAULT_REMOTE_DIR="/home/fcamisa/vfinance-news-sync"
+DEFAULT_REMOTE_DIR="/home/fcamisa/.openclaw/workspace/skills/vfinance-news"
 DEFAULT_DRY_RUN=0
 DEFAULT_USE_DELETE=1
 
